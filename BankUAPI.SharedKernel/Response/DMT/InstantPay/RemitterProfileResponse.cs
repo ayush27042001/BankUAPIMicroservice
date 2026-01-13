@@ -12,8 +12,8 @@ namespace BankUAPI.SharedKernel.Response.DMT.InstantPay
         public string? ActCode { get; set; }
         public string Status { get; set; } = default!;
         public InstantPayRemitterData? Data { get; set; }
-        public string ipay_uuid { get; set; } = default!;
-        public DateTime Timestamp { get; set; }
+        public string? ipay_uuid { get; set; } = default!;
+        public string? Timestamp { get; set; }
         public string? OrderId { get; set; }
         public string? Environment { get; set; }
         public string? InternalCode { get; set; }

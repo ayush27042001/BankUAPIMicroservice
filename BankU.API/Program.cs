@@ -38,7 +38,7 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
     {
-        Title = "InstantPay API",
+        Title = "Banku API",
         Version = "v1"
     });
 
@@ -143,10 +143,10 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
     app.UseSwagger();
     app.UseSwaggerUI(c =>
     {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "InstantPay API v1");
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Banku API v1");
     });
 }
-app.UseHttpsRedirection();
+//app.UseHttpsRedirection();
 app.UseCors("AllowAllFrontends");
 app.UseAuthentication();
 app.UseAuthorization();
