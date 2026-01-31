@@ -1,0 +1,18 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace BankUAPI.SharedKernel.Response.Auth
+{
+    public class LoginResponseDto
+    {
+        public string Token { get; set; } = string.Empty;
+        public string Username { get; set; } = string.Empty;
+        public string Usertype { get; set; } = string.Empty;
+        public string? messaege { get; set; }
+        public string? Phoneno { get; set; }
+        public string? userid { get; set; }
+    }
+}

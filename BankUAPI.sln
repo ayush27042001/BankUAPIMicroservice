@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36705.20 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BankUAPI.Application", "InstantPay.Application\BankUAPI.Application.csproj", "{90FD3963-E21D-4B03-A9BC-4EB2C1B18A03}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BankUAPI.Application", "BankUAPI.Application\BankUAPI.Application.csproj", "{90FD3963-E21D-4B03-A9BC-4EB2C1B18A03}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BankUAPI.Infrastructure", "BankUAPI.Infrastructure\BankUAPI.Infrastructure.csproj", "{57E0E0F3-D729-4879-A36D-806DC7D96CD7}"
 EndProject

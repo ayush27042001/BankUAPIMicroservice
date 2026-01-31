@@ -72,20 +72,14 @@ public partial class Registration
     public string? AccHolder { get; set; }
 
     public string? CompanyName { get; set; }
-
     public string? BusinessStartOn { get; set; }
-
     public string? CompanyAddress { get; set; }
-
     public string? ProfileImage { get; set; }
-
     public string? BusinessProofNo { get; set; }
-
     public string? Gstno { get; set; }
-
     public string? ApprovedIp { get; set; }
-
     public string? ApprovCallback { get; set; }
-
     public string? OutletId { get; set; }
+    public int? ADId { get; set; }
+    public int? WLId { get; set; }
 }

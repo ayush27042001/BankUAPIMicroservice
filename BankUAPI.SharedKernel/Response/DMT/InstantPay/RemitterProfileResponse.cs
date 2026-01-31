@@ -22,50 +22,50 @@ namespace BankUAPI.SharedKernel.Response.DMT.InstantPay
 
     public class InstantPayRemitterData
     {
-        public string MobileNumber { get; set; } = default!;
-        public string FirstName { get; set; } = default!;
-        public string LastName { get; set; } = default!;
-        public string City { get; set; } = default!;
-        public string Pincode { get; set; } = default!;
+        public string? MobileNumber { get; set; } = default!;
+        public string? FirstName { get; set; } = default!;
+        public string? LastName { get; set; } = default!;
+        public string? City { get; set; } = default!;
+        public string? Pincode { get; set; } = default!;
 
-        public decimal LimitPerTransaction { get; set; }
-        public decimal LimitTotal { get; set; }
-        public decimal LimitConsumed { get; set; }
-        public decimal LimitAvailable { get; set; }
+        public decimal? LimitPerTransaction { get; set; }
+        public string? LimitTotal { get; set; }
+        public string? limitConsumed { get; set; }
+        public string? limitAvailable { get; set; }
 
-        public LimitDetails LimitDetails { get; set; } = default!;
-        public List<Beneficiary> Beneficiaries { get; set; } = new();
+        public LimitDetails? LimitDetails { get; set; } = default!;
+        public List<Beneficiary>? Beneficiaries { get; set; } = new();
 
-        public bool IsTxnOtpRequired { get; set; }
-        public bool IsTxnBioAuthRequired { get; set; }
-        public bool IsImpsAllowed { get; set; }
-        public bool IsNeftAllowed { get; set; }
-        public bool IsFaceAuthAvailable { get; set; }
+        public bool? IsTxnOtpRequired { get; set; }
+        public bool? IsTxnBioAuthRequired { get; set; }
+        public bool? IsImpsAllowed { get; set; }
+        public bool? IsNeftAllowed { get; set; }
+        public bool? IsFaceAuthAvailable { get; set; }
 
-        public DateTime Validity { get; set; }
-        public string ReferenceKey { get; set; } = default!;
-        public string PidOptionWadh { get; set; } = default!;
+        public string? Validity { get; set; }
+        public string? ReferenceKey { get; set; } = default!;
+        public string? PidOptionWadh { get; set; } = default!;
     }
 
     public class LimitDetails
     {
-        public decimal MaximumDailyLimit { get; set; }
-        public decimal ConsumedDailyLimit { get; set; }
-        public decimal AvailableDailyLimit { get; set; }
+        public string? maximumDailyLimit { get; set; }
+        public string? consumedDailyLimit { get; set; }
+        public string? availableDailyLimit { get; set; }
 
-        public decimal MaximumMonthlyLimit { get; set; }
-        public decimal ConsumedMonthlyLimit { get; set; }
-        public decimal AvailableMonthlyLimit { get; set; }
+        public string? maximumMonthlyLimit { get; set; }
+        public string? consumedMonthlyLimit { get; set; }
+        public string? availableMonthlyLimit { get; set; }
     }
 
     public class Beneficiary
     {
-        public string Id { get; set; } = default!;
-        public string Name { get; set; } = default!;
-        public string Account { get; set; } = default!;
-        public string Ifsc { get; set; } = default!;
-        public string Bank { get; set; } = default!;
-        public string BeneficiaryMobileNumber { get; set; } = default!;
-        public DateTime VerificationDt { get; set; }
+        public string? Id { get; set; } = default!;
+        public string? Name { get; set; } = default!;
+        public string? Account { get; set; } = default!;
+        public string? Ifsc { get; set; } = default!;
+        public string? Bank { get; set; } = default!;
+        public string? BeneficiaryMobileNumber { get; set; } = default!;
+        public string? VerificationDt { get; set; }
     }
 }

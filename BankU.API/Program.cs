@@ -1,20 +1,32 @@
 ﻿using BankUAPI.Application.Factory;
+using BankUAPI.Application.Handler;
+using BankUAPI.Application.IDFCPayout.Security;
 using BankUAPI.Application.Implementation;
 using BankUAPI.Application.Implementation.Commision.CommisionDistribution;
 using BankUAPI.Application.Implementation.Commision.CommisionHeader;
 using BankUAPI.Application.Implementation.Commision.CommissionSlabs;
 using BankUAPI.Application.Implementation.DMT.InstantPay;
+using BankUAPI.Application.Implementation.Payouts.IDFC;
+using BankUAPI.Application.Implementation.Payouts.IDFC.IDFCHttpClient;
+using BankUAPI.Application.Implementation.Validator;
 using BankUAPI.Application.Interface;
 using BankUAPI.Application.Interface.Commision.CommisionDistribution;
 using BankUAPI.Application.Interface.Commision.CommisionHeader;
 using BankUAPI.Application.Interface.Commision.CommissionSlabs;
 using BankUAPI.Application.Interface.DMT.Provider;
+using BankUAPI.Application.Interface.Payout.IDFCPayout;
+using BankUAPI.Application.Interface.Validator;
+using BankUAPI.Application.Middlewear;
 using BankUAPI.Infrastructure.Mongo;
 using BankUAPI.Infrastructure.Sql.Entities;
 using BankUAPI.SharedKernel.AppSettingModel;
+using BankUAPI.SharedKernel.AppSettingModel.IDFCPayout;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Sockets;
 using System.Text;
 
@@ -34,6 +46,25 @@ else
         options.UseSqlServer(configuration.GetConnectionString("Sql")));
 }
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+    };
+});
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
@@ -72,8 +103,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAllFrontends", policy =>
     {
         policy.WithOrigins(
-            "https://demo2.instantpayment.co.in",
-            "https://neqs.co.in",
+            "https://app.banku.co.in",
             "http://localhost:54956"
         )
         .AllowAnyHeader()
@@ -90,7 +120,15 @@ builder.Services
             System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
     });
 
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;
+    });
 
+
+builder.Services.AddTransient<InstantPayLoggingHandler>();
 
 builder.Services.AddHttpClient("InsPay", client =>
 {
@@ -117,13 +155,40 @@ builder.Services.AddHttpClient("InsPay", client =>
         UseProxy = false,
         AutomaticDecompression = DecompressionMethods.None
     };
+}).AddHttpMessageHandler<InstantPayLoggingHandler>();
+
+builder.Services.AddHttpClient("IDFCClient", c =>
+{
+    c.DefaultRequestHeaders.Accept
+        .Add(new MediaTypeWithQualityHeaderValue("application/json"));
 });
 
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpContextAccessor();
 builder.Services.Configure<InstantPayOptions>(
 builder.Configuration.GetSection("InstantPay"));
+builder.Services.Configure<IdfcBankOptions>(
+builder.Configuration.GetSection("IdfcBank"));
+builder.Services.AddSingleton(sp =>
+    sp.GetRequiredService<
+        Microsoft.Extensions.Options.IOptions<IdfcBankOptions>>().Value);
+builder.Services.AddSingleton<JwtSigner>();
+builder.Services.AddScoped<IIdfcAuthService, IdfcAuthService>();
+builder.Services.AddScoped<IIdempotencyService, EfIdempotencyService>();
+builder.Services.AddScoped<ApiLogger>();
+builder.Services.AddScoped<TransactionLedgerService>();
+builder.Services.AddScoped<IIdfcAccountService, IdfcAccountService>();
+builder.Services.AddScoped<IIdfcBeneValidationService, IdfcBeneValidationService>();
+builder.Services.AddScoped<IIdfcPaymentStatusService, IdfcPaymentStatusService>();
+builder.Services.AddScoped<IAmountValidator, AmountValidator>();
+builder.Services.AddScoped<IWalletValidator, WalletValidator>();
+//builder.Services.AddSingleton<ICommissionProcessor, CommissionProcessor>();
+builder.Services.AddScoped<IRefundPolicy, IdfcRefundPolicy>();
+builder.Services.AddScoped<IIdfcBankClient, IdfcBankClient>();
+//builder.Services.AddScoped<IdfcFundTransferService>();
 builder.Services.AddScoped<ICommonRepositry, CommonRepositry>();
+builder.Services.AddScoped<IIdfcAccountStatementService, IdfcAccountStatementService>();
+builder.Services.AddScoped<IIdfcFundTransferService,IdfcFundTransferService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IInstantPayClient, InstantPayClient>();
 builder.Services.AddScoped<IAepsCheckStatusService, AepsCheckStatusService>();
@@ -135,6 +200,8 @@ builder.Services.AddScoped<IAepsSignupService, AepsSignupService>();
 builder.Services.AddScoped<ICommisionHeaderOps, CommisionHeaderOps>();
 builder.Services.AddScoped<ICommisionSlabsOps, CommisionSlabsOps>();
 builder.Services.AddScoped<ICommissionDistributionService, CommissionDistributionService>();
+builder.Services.AddScoped<IDmtCommissionService, DmtCommissionService>();
+builder.Services.AddScoped<IDmtCommissionService, DmtCommissionService>();
 builder.Services.AddScoped<InstantPayProvider>();
 builder.Services.AddScoped<DmtProviderFactory>();
 var app = builder.Build();
@@ -148,6 +215,7 @@ if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 }
 //app.UseHttpsRedirection();
 app.UseCors("AllowAllFrontends");
+app.UseMiddleware<GlobalExceptionMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseStaticFiles();
