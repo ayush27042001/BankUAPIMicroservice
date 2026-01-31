@@ -182,10 +182,10 @@ builder.Services.AddScoped<IIdfcBeneValidationService, IdfcBeneValidationService
 builder.Services.AddScoped<IIdfcPaymentStatusService, IdfcPaymentStatusService>();
 builder.Services.AddScoped<IAmountValidator, AmountValidator>();
 builder.Services.AddScoped<IWalletValidator, WalletValidator>();
-//builder.Services.AddSingleton<ICommissionProcessor, CommissionProcessor>();
+builder.Services.AddScoped<ICommissionProcessor, CommissionProcessor>();
+builder.Services.AddScoped<IIDFCCommissionService, IDFCCommission>();
 builder.Services.AddScoped<IRefundPolicy, IdfcRefundPolicy>();
 builder.Services.AddScoped<IIdfcBankClient, IdfcBankClient>();
-//builder.Services.AddScoped<IdfcFundTransferService>();
 builder.Services.AddScoped<ICommonRepositry, CommonRepositry>();
 builder.Services.AddScoped<IIdfcAccountStatementService, IdfcAccountStatementService>();
 builder.Services.AddScoped<IIdfcFundTransferService,IdfcFundTransferService>();

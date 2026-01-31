@@ -13,9 +13,9 @@ namespace BankUAPI.Application.Implementation.Payouts.IDFC
 {
     public sealed class CommissionProcessor : ICommissionProcessor
     {
-        private readonly IDFCCommission _commission;
+        private readonly IIDFCCommissionService _commission;
 
-        public CommissionProcessor(IDFCCommission commission)
+        public CommissionProcessor(IIDFCCommissionService commission)
         {
             _commission = commission;
         }
