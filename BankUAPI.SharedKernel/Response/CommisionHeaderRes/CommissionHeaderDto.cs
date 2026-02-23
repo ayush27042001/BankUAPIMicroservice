@@ -12,6 +12,7 @@ namespace BankUAPI.SharedKernel.Response.CommisionHeaderRes
         public string ServiceId { get; set; }
         public string ProviderId { get; set; }
         public string? OperatorId { get; set; }
+        public string? PlanName { get; set; }
         public bool IsActive { get; set; }
         public DateTime CreatedOn { get; set; }
 

@@ -1408,6 +1408,12 @@ public partial class AppDbContext : DbContext
         .HasForeignKey(s => s.CommissionRuleId)
         .OnDelete(DeleteBehavior.Cascade);
 
+        modelBuilder.Entity<CommissionHeader>()
+        .HasOne(h => h.CommissionPlan)
+        .WithMany(p => p.CommissionHeaders)
+        .HasForeignKey(h => h.PlanId)
+        .OnDelete(DeleteBehavior.Restrict);
+
         modelBuilder.Entity<CommissionSlab>()
             .HasMany(s => s.Distributions)
             .WithOne(d => d.CommissionSlab)

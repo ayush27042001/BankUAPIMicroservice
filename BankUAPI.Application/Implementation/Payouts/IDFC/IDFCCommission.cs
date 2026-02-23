@@ -35,8 +35,8 @@ namespace BankUAPI.Application.Implementation.Payouts.IDFC
             Registration retailer;
             retailer = _db.Registrations.Where(id => id.RegistrationId == Convert.ToInt32(UserId)).FirstOrDefault();
 
-
-            var rate = await _commisionDis.GetDmtCommissionAsync(serviceId, providerId, operatorId, txnAmount);
+            int PlanId = retailer?.CommissionPlanId ?? 1;
+            var rate = await _commisionDis.GetDmtCommissionAsync(serviceId, providerId, operatorId, txnAmount, PlanId);
 
             decimal totalCharge = ResolveValue(txnAmount, rate.RetailerValue??0, rate.RetailerType??0);
             decimal distributable = Round(totalCharge * 0.50m);

@@ -63,12 +63,13 @@ namespace BankU.API.Controllers
 
         // 4️⃣ Commission Rule Drop-Down (Service + Provider)
         [HttpGet("commission-rules")]
-        public async Task<IActionResult> GetCommissionRules([FromQuery] string? serviceId = null, [FromQuery] string? providerId = null)
+        public async Task<IActionResult> GetCommissionRules([FromQuery] string? serviceId = null, [FromQuery] string? providerId = null, [FromQuery] int? planid = null)
         {
             var query = _db.CommissionHeader.AsQueryable();
 
             if (serviceId!="") query = query.Where(h => h.ServiceId.Trim().ToLower() == serviceId.Trim().ToLower());
             if (providerId!="") query = query.Where(h => h.ProviderId.Trim().ToLower() == providerId.Trim().ToLower());
+            if (planid != null) query = query.Where(h=> h.PlanId == planid);
 
             var rules = await query.Select(h => new { h.CommissionRuleId, Display = $"Rule {h.CommissionRuleId}" }).ToListAsync();
             return Ok(rules);
@@ -82,6 +83,18 @@ namespace BankU.API.Controllers
                 .Where(s => s.CommissionRuleId == ruleId)
                 .Select(s => new { s.CommissionSlabId, Display = $"{s.FromAmount}-{s.ToAmount}" })
                 .OrderBy(s => s.CommissionSlabId)
+                .ToListAsync();
+
+            return Ok(slabs);
+        }
+
+        [HttpGet("commission-plans")]
+        public async Task<IActionResult> GetCommissionPlans()
+        {
+            var slabs = await _db.CommissionPlan
+                .Where(s => s.IsActive == true)
+                .Select(s => new { s.PlanId, Display = $"{s.PlanName}" })
+                .OrderBy(s => s.PlanId)
                 .ToListAsync();
 
             return Ok(slabs);

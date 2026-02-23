@@ -82,4 +82,5 @@ public partial class Registration
     public string? OutletId { get; set; }
     public int? ADId { get; set; }
     public int? WLId { get; set; }
+    public int? CommissionPlanId { get; set; }
 }

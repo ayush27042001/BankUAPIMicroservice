@@ -19,9 +19,9 @@ namespace BankU.API.Controllers
             _commisionHeader= comm;
         }
         [HttpGet]
-        public async Task<IActionResult> GetAll(int page = 1, int pageSize = 10)
+        public async Task<IActionResult> GetAll(int planId, int page = 1, int pageSize = 10)
         {
-            var result = await _commisionHeader.GetAllCommisionHeader(page, pageSize);
+            var result = await _commisionHeader.GetAllCommisionHeader(planId, page, pageSize);
             return Ok(result);
         }
 

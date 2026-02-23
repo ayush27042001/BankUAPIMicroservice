@@ -36,8 +36,9 @@ namespace BankUAPI.Application.Implementation.DMT.InstantPay
             Registration retailer;
             retailer = _db.Registrations.Where(id => id.RegistrationId == Convert.ToInt32(UserId)).FirstOrDefault();
 
+            int PlanId = retailer?.CommissionPlanId ?? 1;
 
-            var rate = await _commisionDis.GetDmtCommissionAsync(serviceId, providerId, operatorId, txnAmount);
+            var rate = await _commisionDis.GetDmtCommissionAsync(serviceId, providerId, operatorId, txnAmount, PlanId);
 
             //Validate(rate);
 

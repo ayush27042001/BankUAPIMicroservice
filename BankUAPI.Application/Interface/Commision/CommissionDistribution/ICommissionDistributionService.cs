@@ -16,6 +16,6 @@ namespace BankUAPI.Application.Interface.Commision.CommisionDistribution
         Task<CommissionDistribution> CreateAsync(CreateDistributionDTO dto);
         Task<CommissionDistribution> UpdateAsync(int id, UpdateDistributionDTO dto);
         Task DeleteAsync(int id);
-        Task<CommissionRate> GetDmtCommissionAsync(string serviceId, string providerId, string? operatorId, decimal txnAmount);
+        Task<CommissionRate> GetDmtCommissionAsync(string serviceId, string providerId, string? operatorId, decimal txnAmount, int PlanId = 1);
     }
 }

@@ -18,14 +18,14 @@ namespace BankUAPI.Application.Implementation.Commision.CommisionHeader
     {
         private readonly AppDbContext _dbContext;
 
-        public CommisionHeaderOps( AppDbContext db)
+        public CommisionHeaderOps(AppDbContext db)
         {
             _dbContext = db;
         }
 
-        public async Task<PagedResult<CommissionHeaderDto>> GetAllCommisionHeader(int page = 1, int pageSize = 10)
+        public async Task<PagedResult<CommissionHeaderDto>> GetAllCommisionHeader(int planId = 1, int page = 1, int pageSize = 10)
         {
-            var query = _dbContext.CommissionHeader.AsNoTracking();
+            var query = _dbContext.CommissionHeader.Where(h => h.PlanId == planId).AsNoTracking();
 
             var total = await query.CountAsync();
 
@@ -35,6 +35,7 @@ namespace BankUAPI.Application.Implementation.Commision.CommisionHeader
                 .Take(pageSize)
                 .Select(h => new CommissionHeaderDto
                 {
+                    PlanName = h.CommissionPlan.PlanName ??"",
                     CommissionRuleId = h.CommissionRuleId,
                     ServiceId = h.ServiceId,
                     ProviderId = h.ProviderId,
@@ -69,18 +70,19 @@ namespace BankUAPI.Application.Implementation.Commision.CommisionHeader
         }
 
 
-        public async Task<CommissionHeader> Create( CreateHeaderDTO dto)
+        public async Task<CommissionHeader> Create(CreateHeaderDTO dto)
         {
             bool exists = await _dbContext.CommissionHeader.AnyAsync(h =>
-                h.ServiceId == dto.ServiceId && h.ProviderId == dto.ProviderId && h.OperatorId == dto.OperatorId);
+                h.ServiceId == dto.ServiceId && h.PlanId == dto.PlanId && h.ProviderId == dto.ProviderId && h.OperatorId == dto.OperatorId);
 
             if (exists)
             {
-                throw new InvalidOperationException("Rule already exists.");
+                throw new InvalidOperationException("Rule already exists with this combination.");
             }
 
             var header = new CommissionHeader
             {
+                PlanId = dto.PlanId,
                 ServiceId = dto.ServiceId,
                 ProviderId = dto.ProviderId,
                 OperatorId = dto.OperatorId

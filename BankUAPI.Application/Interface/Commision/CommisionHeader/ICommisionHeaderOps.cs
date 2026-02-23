@@ -12,7 +12,7 @@ namespace BankUAPI.Application.Interface.Commision.CommisionHeader
 {
     public interface ICommisionHeaderOps
     {
-        Task<PagedResult<CommissionHeaderDto>> GetAllCommisionHeader(int page = 1, int pageSize = 10);
+        Task<PagedResult<CommissionHeaderDto>> GetAllCommisionHeader(int planId = 1, int page = 1, int pageSize = 10);
         Task<CommissionHeader> Create(CreateHeaderDTO dto);
         Task<CommissionHeader> Update(int id, UpdateHeaderDTO dto);
         Task DeleteAsync(int id);

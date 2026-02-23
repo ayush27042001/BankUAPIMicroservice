@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -89,7 +90,7 @@ namespace BankUAPI.Application.Implementation.Commision.CommisionDistribution
             _dbContext.CommissionDistribution.Remove(dist);
             await _dbContext.SaveChangesAsync();
         }
-        public async Task<CommissionRate> GetDmtCommissionAsync(string serviceId, string providerId, string? operatorId, decimal txnAmount)
+        public async Task<CommissionRate> GetDmtCommissionAsync(string serviceId, string providerId, string? operatorId, decimal txnAmount, int PlanId=1)
         {
             var rate = await _dbContext.CommissionHeader
                 .AsNoTracking()
@@ -97,6 +98,7 @@ namespace BankUAPI.Application.Implementation.Commision.CommisionDistribution
                     h.ServiceId == serviceId &&
                     h.ProviderId == providerId &&
                     h.OperatorId == operatorId &&
+                    h.PlanId == PlanId &&
                     h.IsActive)
                 .SelectMany(h => h.Slabs
                     .Where(s => txnAmount >= s.FromAmount && txnAmount <= s.ToAmount)

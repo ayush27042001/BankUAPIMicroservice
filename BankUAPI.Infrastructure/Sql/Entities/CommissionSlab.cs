@@ -15,10 +15,8 @@ namespace BankUAPI.Infrastructure.Sql.Entities
         public int CommissionRuleId { get; set; }
         public decimal FromAmount { get; set; }
         public decimal ToAmount { get; set; }
-        public int? PlanId { get; set; }
         [JsonIgnore]
         public CommissionHeader CommissionHeader { get; set; } = null!;
-        public CommissionPlan CommissionPlan { get; set; } = null!;
         public List<CommissionDistribution> Distributions { get; set; } = new List<CommissionDistribution>();
     }
 }

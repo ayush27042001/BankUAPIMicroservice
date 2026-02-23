@@ -13,5 +13,6 @@ namespace BankUAPI.Infrastructure.Sql.Entities
         public int PlanId { get; set; }
         public string? PlanName { get; set; }
         public bool? IsActive { get; set; }
+        public ICollection<CommissionHeader> CommissionHeaders { get; set; } = new List<CommissionHeader>();
     }
 }
