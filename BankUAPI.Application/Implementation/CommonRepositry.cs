@@ -135,40 +135,47 @@ namespace BankUAPI.Application.Implementation
 
         public async Task AddDmtTxnReportAsync(Registration userData, string serviceName, string operatorId, string operatorName, string mobile, string accountNo, decimal txnAmount, decimal retailerCharge, string status, string apiName, object apiResponse, string transactionId, string? orderId, string? BankName, string? BeneName, string? Ifsccode, decimal? OldBalance, CancellationToken ct)
         {
-            decimal? WalletBalance = await _db.Tbluserbalances.Where(id => id.UserId == userData.RegistrationId).OrderByDescending(id=> id.Id).Select(u => u.NewBal).FirstOrDefaultAsync();
-            var txn = new TxnReport
+            try
             {
-                Brid = operatorId ?? string.Empty,
-                UserId = userData.RegistrationId.ToString(),
-                UserName = userData.FullName+"-"+userData.MobileNo,
-                ServiceName = serviceName,          
-                OperatorId = operatorId,
-                OperatorName = operatorName,
-                MobileNo = mobile,
-                AccountNo = accountNo,
-                Amount = txnAmount,
-                OldBal = OldBalance?? WalletBalance,
-                Commission = 0m,
-                Surcharge = retailerCharge,
-                TotalCost = txnAmount + retailerCharge,
-                NewBal = status=="SUCCESS" || status =="PROCESS" ? OldBalance - (txnAmount + retailerCharge): WalletBalance,
-                Apiname = apiName,
-                TxnDate = DateTime.Now,
-                TxnUpdateDate = DateTime.Now,
-                Status = status,
-                ApiRequest = string.Empty,
-                ApiResponse = JsonSerializer.Serialize(apiResponse),
-                CallbackResponse = string.Empty,
-                ApiMsg = orderId ?? string.Empty,
-                IpAddress = string.Empty,
-                BankName = BankName ?? string.Empty,
-                BeneName = BeneName ?? string.Empty,
-                IfscCode = Ifsccode ?? string.Empty,
-                TransactionId = transactionId
-            };
+                decimal? WalletBalance = await _db.Tbluserbalances.Where(id => id.UserId == userData.RegistrationId).OrderByDescending(id => id.Id).Select(u => u.NewBal).FirstOrDefaultAsync();
+                var txn = new TxnReport
+                {
+                    Brid = operatorId ?? string.Empty,
+                    UserId = userData.RegistrationId.ToString(),
+                    UserName = userData.FullName + "-" + userData.MobileNo,
+                    ServiceName = serviceName,
+                    OperatorId = operatorId,
+                    OperatorName = operatorName,
+                    MobileNo = mobile,
+                    AccountNo = accountNo,
+                    Amount = txnAmount,
+                    OldBal = OldBalance ?? WalletBalance,
+                    Commission = 0m,
+                    Surcharge = retailerCharge,
+                    TotalCost = txnAmount + retailerCharge,
+                    NewBal = status == "SUCCESS" || status == "PROCESS" ? OldBalance - (txnAmount + retailerCharge) : WalletBalance,
+                    Apiname = apiName,
+                    TxnDate = DateTime.Now,
+                    TxnUpdateDate = DateTime.Now,
+                    Status = status,
+                    ApiRequest = string.Empty,
+                    ApiResponse = JsonSerializer.Serialize(apiResponse),
+                    CallbackResponse = string.Empty,
+                    ApiMsg = orderId ?? string.Empty,
+                    IpAddress = string.Empty,
+                    BankName = BankName ?? string.Empty,
+                    BeneName = BeneName ?? string.Empty,
+                    IfscCode = Ifsccode ?? string.Empty,
+                    TransactionId = transactionId
+                };
 
-            _db.TxnReports.Add(txn);
-            await _db.SaveChangesAsync(ct);
+                _db.TxnReports.Add(txn);
+                await _db.SaveChangesAsync(ct);
+            }
+            catch(Exception ex)
+            {
+                throw ex;
+            }
         }
 
         public async Task<WalletCheckResonse> WalletCheckValidationAsync( int userId, decimal txnAmount, CancellationToken ct = default)
@@ -254,11 +261,8 @@ namespace BankUAPI.Application.Implementation
                 .Select(g => new
                 {
                     UserId = g.Key,
-                    Balance = g.OrderByDescending(x => x.Id)
-                               .Select(x => x.NewBal ?? 0)
-                               .First()
-                })
-                .ToDictionaryAsync(x => x.UserId, x => x.Balance);
+                    Balance = g.OrderByDescending(x => x.Id).Select(x => x.NewBal ?? 0).First()
+                }).ToDictionaryAsync(x => x.UserId, x => x.Balance);
         }
 
 

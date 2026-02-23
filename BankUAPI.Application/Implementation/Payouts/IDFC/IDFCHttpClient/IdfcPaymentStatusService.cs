@@ -47,13 +47,24 @@ namespace BankUAPI.Application.Implementation.Payouts.IDFC.IDFCHttpClient
             string idempotencyKey,
             string clientCode)
         {
-            var requestJson = JsonSerializer.Serialize(request, IdfcJson.CamelCase);
-            var requestHash = SHA256.HashData(Encoding.UTF8.GetBytes(requestJson))
-                .ToString();
 
+            var requestPayload = new
+            {
+                paymentTransactionStatusReq = new
+                {
+                    tellerBranch = request.paymentTransactionStatusReq.tellerBranch,
+                    tellerID = request.paymentTransactionStatusReq.tellerID,
+                    transactionType = request.paymentTransactionStatusReq.transactionType,
+                    transactionReferenceNumber = request.paymentTransactionStatusReq.transactionReferenceNumber,
+                    paymentReferenceNumber = request.paymentTransactionStatusReq.paymentReferenceNumber,
+                    transactionDate = request.paymentTransactionStatusReq.transactionDate
+                }
+            };
 
-            var cached = await _idempotency
-                .GetExistingResponseAsync(idempotencyKey, requestHash, clientCode);
+            var requestJson = JsonSerializer.Serialize(requestPayload, IdfcJson.CamelCase);
+            var requestHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(requestJson)));
+           
+            var cached = await _idempotency.GetExistingResponseAsync(idempotencyKey, requestHash, clientCode);
 
             if (!string.IsNullOrEmpty(cached))
             {
@@ -80,10 +91,13 @@ namespace BankUAPI.Application.Implementation.Payouts.IDFC.IDFCHttpClient
             httpRequest.Headers.Add("source", _options.Source);
             httpRequest.Headers.Add("correlationId", correlationId);
 
-            httpRequest.Content = new StringContent(
-                encryptedPayload,
-                Encoding.UTF8,
-                "application/octet-stream");
+            var content = new ByteArrayContent(
+               Encoding.UTF8.GetBytes(encryptedPayload));
+
+            content.Headers.ContentType =
+                new MediaTypeHeaderValue("application/octet-stream");
+
+            httpRequest.Content = content;
 
             var sw = Stopwatch.StartNew();
             var response = await client.SendAsync(httpRequest);

@@ -43,15 +43,28 @@ namespace BankUAPI.Application.Implementation.Payouts.IDFC.IDFCHttpClient
             _ledger = ledger;
         }
 
-        public async Task<BeneValidationResponse> ValidateAsync(
-            BeneValidationRequest request,
-            string idempotencyKey,
-            string clientCode)
+        public async Task<BeneValidationResponse> ValidateAsync(BeneValidationRequest request, string idempotencyKey, string clientCode)
         {
-            var requestJson = JsonSerializer.Serialize(request, IdfcJson.CamelCase);
-            var requestHash = SHA256.HashData(Encoding.UTF8.GetBytes(requestJson))
-                .ToString();
+            request.beneValidationReq.transactionReferenceNumber = AesCryptoService.GenerateNumericTransactionId();
+            var requestPayload = new
+            {
+                beneValidationReq = new
+                {
+                    remitterName = request.beneValidationReq.remitterName,
+                    remitterMobileNumber = request.beneValidationReq.remitterMobileNumber,
+                    debtorAccountId = _options.DebitAccount,
+                    accountType = request.beneValidationReq.accountType,
+                    creditorAccountId = request.beneValidationReq.creditorAccountId,
+                    ifscCode = request.beneValidationReq.ifscCode,
+                    paymentDescription = request.beneValidationReq.paymentDescription,
+                    transactionReferenceNumber = request.beneValidationReq.transactionReferenceNumber,
+                    merchantCode = request.beneValidationReq.merchantCode,
+                    identifier = request.beneValidationReq.identifier
+                }
+            };
 
+            var requestJson = JsonSerializer.Serialize(requestPayload, IdfcJson.CamelCase);
+            var requestHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(requestJson)));
             var cached = await _idempotency
                 .GetExistingResponseAsync(idempotencyKey, requestHash, clientCode);
 
@@ -76,19 +89,23 @@ namespace BankUAPI.Application.Implementation.Payouts.IDFC.IDFCHttpClient
             httpRequest.Headers.Add("source", _options.Source);
             httpRequest.Headers.Add("correlationId", correlationId);
 
-            httpRequest.Content = new StringContent(
-                encryptedPayload,
-                Encoding.UTF8,
-                "application/octet-stream");
+            var content = new ByteArrayContent(
+               Encoding.UTF8.GetBytes(encryptedPayload));
 
-            await _logger.LogAsync(
-                httpRequest, null, requestJson, "",
-                "IDFC-BeneValidation", clientCode, 0);
+            content.Headers.ContentType =
+                new MediaTypeHeaderValue("application/octet-stream");
+
+            httpRequest.Content = content;
+
+   
 
             var sw = Stopwatch.StartNew();
             var response = await client.SendAsync(httpRequest);
             var encryptedResponse = await response.Content.ReadAsStringAsync();
             sw.Stop();
+            await _logger.LogAsync(
+              httpRequest, response, requestJson, encryptedResponse,
+              "IDFC-BeneValidation", clientCode, sw.ElapsedMilliseconds);
             var decryptedJson =
                 AesCryptoService.Decrypt(encryptedResponse, _options.SecretKey);
 
@@ -101,10 +118,10 @@ namespace BankUAPI.Application.Implementation.Payouts.IDFC.IDFCHttpClient
 
 
             var result = JsonSerializer.Deserialize<BeneValidationResponse>(
-                decryptedJson)!;
+                decryptedJson, IdfcJson.CamelCase)!;
 
             await _ledger.RecordBalanceAsync(
-               clientCode, correlationId, request?.beneValidationReq?.debtorAccountId,
+               clientCode, correlationId, _options.DebitAccount,
                result?.beneValidationResp?.metaData?.status,
                requestJson, decryptedJson, "BENE_VALIDATION", "", "BENE_VALIDATION", request?.beneValidationReq?.transactionReferenceNumber, request?.beneValidationReq?.creditorAccountId);
 

@@ -22,12 +22,10 @@ namespace BankUAPI.Application.Implementation.Payouts.IDFC
 
         public async Task ApplyAsync(FundTransferResponse response, Registration user, decimal amount, CommissionResponse commission, CancellationToken ct)
         {
-            var status = response
-                .initiateAuthGenericFundTransferAPIResp
-                .resourceData
-                .status;
+            var status = response.initiateAuthGenericFundTransferAPIResp.metaData.status ?? "";
+            
 
-            if (status is not ("FAILED" or "REJECTED"))
+            if (status is not ("FAILED" or "REJECTED" or "ERROR"))
                 return;
 
             await _repo.RefundWalletBalance(

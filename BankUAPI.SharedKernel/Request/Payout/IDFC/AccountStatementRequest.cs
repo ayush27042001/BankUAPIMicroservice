@@ -13,7 +13,6 @@ namespace BankUAPI.SharedKernel.Request.Payout.IDFC
         {
             public string? CBSTellerBranch { get; set; }
             public string? CBSTellerID { get; set; }
-            public string accountNumber { get; set; } = default!;
             public string fromDate { get; set; } = default!;
             public string toDate { get; set; } = default!;
             public string? numberOfTransactions { get; set; }

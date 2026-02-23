@@ -3,6 +3,7 @@ using BankUAPI.Application.Interface.Payout.IDFCPayout;
 using BankUAPI.SharedKernel.AppSettingModel.IDFCPayout;
 using BankUAPI.SharedKernel.Helper.Payout.IDFC;
 using BankUAPI.SharedKernel.Response.Payout.IDFC;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -42,24 +43,23 @@ namespace BankUAPI.Application.Implementation.Payouts.IDFC.IDFCHttpClient
             _ledger = ledger;
         }
 
-        public async Task<IdfcAccountBalanceResponse> GetAccountBalanceAsync(string accountNumber, string idempotencyKey, string clientCode)
+        public async Task<IdfcAccountBalanceResponse> GetAccountBalanceAsync(string idempotencyKey, string clientCode)
         {
             var internalTxnId = Guid.NewGuid().ToString("N");
 
             var payload = JsonSerializer.Serialize(new
             {
-                prefetchAccountReq = new {
-
-                    cbsTellerBranch = "",
-                    cbsTellerID = "",
-                    accountNumber= accountNumber
-
-                },
-                IdfcJson.CamelCase
+                prefetchAccountReq = new
+                {
+                    CBSTellerBranch = "",
+                    CBSTellerID = "",
+                    accountNumber = _options.DebitAccount.Trim()
+                }
             });
 
-            var hash = SHA256.HashData(Encoding.UTF8.GetBytes(payload))
-                .ToString();
+
+            var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(payload)));
+
 
             var cached = await _idempotency
                 .GetExistingResponseAsync(idempotencyKey, hash, clientCode);
@@ -81,13 +81,22 @@ namespace BankUAPI.Application.Implementation.Payouts.IDFC.IDFCHttpClient
             req.Headers.Add("source", _options.Source);
             req.Headers.Add("correlationId", internalTxnId);
 
-            req.Content = new StringContent(
-                encrypted, Encoding.UTF8, "application/octet-stream");
+            var content = new ByteArrayContent(
+              Encoding.UTF8.GetBytes(encrypted));
+
+            content.Headers.ContentType =
+                new MediaTypeHeaderValue("application/octet-stream");
+
+            req.Content = content;
+
 
             var sw = Stopwatch.StartNew();
             var res = await _client.SendAsync(req);
             var encRes = await res.Content.ReadAsStringAsync();
             sw.Stop();
+            await _logger.LogAsync(
+               req, res, payload+ encrypted, encRes,
+               "IDFC-GetBalance", clientCode, sw.ElapsedMilliseconds);
 
             var decrypted = AesCryptoService.Decrypt(encRes, _options.SecretKey);
 
@@ -96,7 +105,7 @@ namespace BankUAPI.Application.Implementation.Payouts.IDFC.IDFCHttpClient
                 "IDFC-GetBalance", clientCode, sw.ElapsedMilliseconds);
 
             await _ledger.RecordBalanceAsync(
-                clientCode, internalTxnId, accountNumber,
+                clientCode, internalTxnId, _options.DebitAccount.Trim(),
                 res.IsSuccessStatusCode ? "SUCCESS" : "FAILED",
                 payload, decrypted, "BalanceCheck", "", "BalanceCheck");
 
@@ -113,5 +122,7 @@ namespace BankUAPI.Application.Implementation.Payouts.IDFC.IDFCHttpClient
                     NumberHandling = JsonNumberHandling.AllowReadingFromString
                 })!;
         }
+
+
     }
 }

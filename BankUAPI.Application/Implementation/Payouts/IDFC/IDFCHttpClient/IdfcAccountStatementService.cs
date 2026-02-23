@@ -43,15 +43,28 @@ namespace BankUAPI.Application.Implementation.Payouts.IDFC.IDFCHttpClient
         }
 
         public async Task<AccountStatementResponse> GetMiniStatementAsync(
-            AccountStatementRequest request,
-            string idempotencyKey,
-            string clientCode)
+    AccountStatementRequest request,
+    string idempotencyKey,
+    string clientCode)
         {
 
-            var requestJson = JsonSerializer.Serialize(request, IdfcJson.CamelCase);
-            var requestHash = SHA256.HashData(Encoding.UTF8.GetBytes(requestJson))
-                .ToString();
+            var requestPayload = new
+            {
+                getAccountStatementReq = new
+                {
+                    CBSTellerBranch = request.getAccountStatementReq.CBSTellerBranch,
+                    CBSTellerID = request.getAccountStatementReq.CBSTellerID,
+                    accountNumber = _options.DebitAccount.Trim(),
+                    fromDate = request.getAccountStatementReq.fromDate,
+                    toDate = request.getAccountStatementReq.toDate,
+                    numberOfTransactions = request.getAccountStatementReq.numberOfTransactions,
+                    prompt = request.getAccountStatementReq.prompt
+                }
+            };
 
+            var requestJson = JsonSerializer.Serialize(requestPayload, IdfcJson.CamelCase);
+            var requestHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(requestJson)));
+           
             var cached = await _idempotency
                 .GetExistingResponseAsync(idempotencyKey, requestHash, clientCode);
 
@@ -77,10 +90,13 @@ namespace BankUAPI.Application.Implementation.Payouts.IDFC.IDFCHttpClient
             httpRequest.Headers.Add("source", _options.Source);
             httpRequest.Headers.Add("correlationId", correlationId);
 
-            httpRequest.Content = new StringContent(
-                encryptedPayload,
-                Encoding.UTF8,
-                "application/octet-stream");
+            var content = new ByteArrayContent(
+                Encoding.UTF8.GetBytes(encryptedPayload));
+
+            content.Headers.ContentType =
+                new MediaTypeHeaderValue("application/octet-stream");
+
+            httpRequest.Content = content;
 
             var sw = Stopwatch.StartNew();
             var response = await client.SendAsync(httpRequest);
@@ -113,7 +129,7 @@ namespace BankUAPI.Application.Implementation.Payouts.IDFC.IDFCHttpClient
             await _ledger.RecordBalanceAsync(
                 clientCode: clientCode,
                 internalTxnId: correlationId,
-                debitAccount: request.getAccountStatementReq.accountNumber,
+                debitAccount: _options.DebitAccount,
                 status: result.getAccountStatementResp.metaData.status,
                 requestJson: requestJson,
                 responseJson: decryptedJson,
@@ -123,5 +139,6 @@ namespace BankUAPI.Application.Implementation.Payouts.IDFC.IDFCHttpClient
             return result;
         }
     }
+
 
 }

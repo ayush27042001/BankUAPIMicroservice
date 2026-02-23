@@ -13,7 +13,6 @@ namespace BankUAPI.SharedKernel.Request.Payout.IDFC
         {
             public string? tellerBranch { get; set; }
             public string? tellerID { get; set; }
-            public string debitAccountNumber { get; set; } = default!;
             public string creditAccountNumber { get; set; } = default!;
             public string remitterName { get; set; } = default!;
             public string amount { get; set; } = default!;
@@ -27,6 +26,7 @@ namespace BankUAPI.SharedKernel.Request.Payout.IDFC
             public string? mobileNo { get; set; }
             public string? companyCode { get; set; } = "";
             public string? UserId { get; set; } = "";
+            public string? mpin { get; set; } = "";
         }
     }
 }

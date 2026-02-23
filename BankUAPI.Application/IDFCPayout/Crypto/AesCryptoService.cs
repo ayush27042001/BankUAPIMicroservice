@@ -43,5 +43,11 @@ namespace BankUAPI.Application.IDFCPayout.Crypto
 
             return Encoding.UTF8.GetString(plainBytes);
         }
+
+        public static string GenerateNumericTransactionId(int length = 12)
+        {
+            var random = new Random();
+            return string.Concat(Enumerable.Range(0, length).Select(_ => random.Next(0, 10).ToString()));
+        }
     }
 }

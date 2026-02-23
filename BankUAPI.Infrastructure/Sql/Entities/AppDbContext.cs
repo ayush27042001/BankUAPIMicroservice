@@ -120,7 +120,9 @@ public partial class AppDbContext : DbContext
     public DbSet<ApiIdempotency> ApiIdempotency => Set<ApiIdempotency>();
     public DbSet<ApiRequestResponseLogForIDFCPayout> ApiRequestResponseLogForIDFCPayout => Set<ApiRequestResponseLogForIDFCPayout>();
     public DbSet<TransactionLedger> TransactionLedger => Set<TransactionLedger>();
-
+    public DbSet<Payment> Payments { get; set; }
+    public DbSet<PaymentGatewayLog> TblPaymentGatewayLogs { get; set; }
+    public DbSet<CommissionPlan> CommissionPlan { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
@@ -1440,6 +1442,10 @@ public partial class AppDbContext : DbContext
             .WithMany(f => f.ServiceProviderFeatureMaps)
             .HasForeignKey(spfm => new { spfm.ServiceCode, spfm.FeatureCode })
             .HasPrincipalKey(f => new { f.ServiceCode, f.FeatureCode });
+
+        modelBuilder.Entity<Payment>()
+            .HasIndex(p => p.TxnId)
+            .IsUnique();
 
         OnModelCreatingPartial(modelBuilder);
     }

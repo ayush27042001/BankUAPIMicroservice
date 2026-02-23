@@ -16,13 +16,12 @@ namespace BankUAPI.SharedKernel.Request.Payout.IDFC
         public string? remitterName { get; set; } = default!;
         public string CompanyCode { get; set; } = default!;
         public string remitterMobileNumber { get; set; } = default!;
-        public string debtorAccountId { get; set; } = default!;
         public string accountType { get; set; } = "10";
         public string creditorAccountId { get; set; } = default!;
         public string ifscCode { get; set; } = default!;
         public string paymentDescription { get; set; } = default!;
         public string transactionReferenceNumber { get; set; } = default!;
-        public string merchantCode { get; set; } = default!;
+        public string merchantCode { get; set; } = "4814";
         public string identifier { get; set; } = "Auto";
     }
 }

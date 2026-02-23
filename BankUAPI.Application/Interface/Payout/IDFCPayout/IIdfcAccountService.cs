@@ -9,6 +9,6 @@ namespace BankUAPI.Application.Interface.Payout.IDFCPayout
 {
     public interface IIdfcAccountService
     {
-        Task<IdfcAccountBalanceResponse> GetAccountBalanceAsync(string accountNumber, string idempotencyKey, string clientCode);
+        Task<IdfcAccountBalanceResponse> GetAccountBalanceAsync(string idempotencyKey, string clientCode);
     }
 }

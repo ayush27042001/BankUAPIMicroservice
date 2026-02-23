@@ -26,11 +26,11 @@ namespace BankU.API.Controllers
             _fundTransferService = fundTransferService;
         }
 
-        [HttpGet("balance/{accountNumber}/{CompanyCode}")]
-        public async Task<IActionResult> GetBalance(string accountNumber, [FromHeader(Name = "Idempotency-Key")] string? idempotencyKey, string? CompanyCode)
+        [HttpGet("balance/{CompanyCode}")]
+        public async Task<IActionResult> GetBalance([FromHeader(Name = "Idempotency-Key")] string? idempotencyKey, string? CompanyCode)
         {
             idempotencyKey ??= Guid.NewGuid().ToString("N");
-            var result = await _service.GetAccountBalanceAsync(accountNumber, idempotencyKey, CompanyCode);
+            var result = await _service.GetAccountBalanceAsync(idempotencyKey, CompanyCode);
             return Ok(result);
         }
 

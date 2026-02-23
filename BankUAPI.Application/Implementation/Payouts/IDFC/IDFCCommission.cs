@@ -38,7 +38,7 @@ namespace BankUAPI.Application.Implementation.Payouts.IDFC
 
             var rate = await _commisionDis.GetDmtCommissionAsync(serviceId, providerId, operatorId, txnAmount);
 
-            decimal totalCharge = ResolveValue(txnAmount, rate.RetailerValue, rate.RetailerType);
+            decimal totalCharge = ResolveValue(txnAmount, rate.RetailerValue??0, rate.RetailerType??0);
             decimal distributable = Round(totalCharge * 0.50m);
             decimal adminComm = 0;
             decimal distComm = 0;

@@ -41,7 +41,7 @@ namespace BankUAPI.Application.Implementation.DMT.InstantPay
 
             //Validate(rate);
 
-            decimal totalCharge = ResolveValue(txnAmount, rate.RetailerValue, rate.RetailerType);
+            decimal totalCharge = ResolveValue(txnAmount, rate.RetailerValue ?? 0, rate.RetailerType ?? 0);
             decimal distributable = Round(totalCharge * 0.50m);
             decimal adminComm = 0;
             decimal distComm = 0;
@@ -78,7 +78,7 @@ namespace BankUAPI.Application.Implementation.DMT.InstantPay
 
                 if (retailer.ADId != null)
                 {
-                    distComm = ResolveValue(distributable, rate.DistributorValue, rate.DistributorType);
+                    distComm = ResolveValue(distributable, rate.DistributorValue ?? 0, rate.DistributorType ?? 0);
                     adminComm = Round(distributable - distComm);
 
                     AddLedger(
