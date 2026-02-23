@@ -15,8 +15,9 @@ namespace BankUAPI.Infrastructure.Sql.Entities
         public string ProviderId { get; set; }
         public string? OperatorId { get; set; }
         public bool IsActive { get; set; } = true;
+        public int? PlanId { get; set; }
         public DateTime CreatedOn { get; set; } = DateTime.UtcNow;
-
+        public CommissionPlan CommissionPlan { get; set; } = null!;
         public List<CommissionSlab> Slabs { get; set; } = new();
     }
 }

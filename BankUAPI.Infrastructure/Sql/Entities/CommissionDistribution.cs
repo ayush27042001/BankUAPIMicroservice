@@ -16,6 +16,8 @@ namespace BankUAPI.Infrastructure.Sql.Entities
         public int CommissionType { get; set; } // 1=FLAT, 2=PERCENT
         public decimal CommissionValue { get; set; }
         public DateTime CreatedOn { get; set; } = DateTime.Now;
+        public int? PlanId { get; set; }    
+        public CommissionPlan CommissionPlan { get; set; } = null!;
         public CommissionSlab CommissionSlab { get; set; } = null!;
     }
 }
