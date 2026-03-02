@@ -2,6 +2,7 @@
 using BankUAPI.Application.Handler;
 using BankUAPI.Application.IDFCPayout.Security;
 using BankUAPI.Application.Implementation;
+using BankUAPI.Application.Implementation.AddFund;
 using BankUAPI.Application.Implementation.Commision.CommisionDistribution;
 using BankUAPI.Application.Implementation.Commision.CommisionHeader;
 using BankUAPI.Application.Implementation.Commision.CommissionPlans;
@@ -12,6 +13,7 @@ using BankUAPI.Application.Implementation.Payouts.IDFC;
 using BankUAPI.Application.Implementation.Payouts.IDFC.IDFCHttpClient;
 using BankUAPI.Application.Implementation.Validator;
 using BankUAPI.Application.Interface;
+using BankUAPI.Application.Interface.AddFund;
 using BankUAPI.Application.Interface.Commision.CommisionDistribution;
 using BankUAPI.Application.Interface.Commision.CommisionHeader;
 using BankUAPI.Application.Interface.Commision.CommissionPlans;
@@ -24,6 +26,7 @@ using BankUAPI.Application.Middlewear;
 using BankUAPI.Infrastructure.Mongo;
 using BankUAPI.Infrastructure.Sql.Entities;
 using BankUAPI.SharedKernel.AppSettingModel;
+using BankUAPI.SharedKernel.AppSettingModel.AddFund;
 using BankUAPI.SharedKernel.AppSettingModel.IDFCPayout;
 using BankUAPI.SharedKernel.AppSettingModel.PayU;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -164,6 +167,18 @@ builder.Services.AddHttpClient("InsPay", client =>
     };
 }).AddHttpMessageHandler<InstantPayLoggingHandler>();
 
+builder.Services.AddHttpClient("AddFundClient", client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["AllApi:BaseUrl"]);     //Add Fund
+    client.DefaultRequestHeaders.Accept.Add(
+        new MediaTypeWithQualityHeaderValue("application/json"));
+
+    client.Timeout = TimeSpan.FromSeconds(90);
+});
+
+builder.Services.Configure<AllApiSettings>(
+    builder.Configuration.GetSection("AllApi")); 
+
 builder.Services.AddHttpClient("IDFCClient", c =>
 {
     c.DefaultRequestHeaders.Accept
@@ -226,6 +241,8 @@ builder.Services.AddScoped<InstantPayProvider>();
 builder.Services.AddScoped<DmtProviderFactory>();
 builder.Services.AddScoped<IPayUPaymentService, PayUPaymentService>();
 builder.Services.AddTransient<PaymentGatewayLoggingHandler>();
+builder.Services.AddScoped<IAddFundService, AddFundService>();//Add Fund Service By Sachin
+builder.Services.AddScoped<IAddFundStatusService,AddFundStatusService>();//Add Fund Service By Sachin
 var app = builder.Build();
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {

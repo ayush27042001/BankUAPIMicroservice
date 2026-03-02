@@ -247,7 +247,7 @@ namespace BankUAPI.Application.Implementation
             };
         }
 
-        private async Task<Dictionary<int, decimal>> GetLatestBalancesAsync(
+        public async Task<Dictionary<int, decimal>> GetLatestBalancesAsync(
             params int?[] userIds)
         {
             var ids = userIds.Where(x => x.HasValue)
