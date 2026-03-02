@@ -28,4 +28,5 @@ public partial class Addfund
     public string? ApiResponse { get; set; }
 
     public decimal? AmountPaid { get; set; }
+    public string IdempotencyKey { get; set; } = null!;
 }
