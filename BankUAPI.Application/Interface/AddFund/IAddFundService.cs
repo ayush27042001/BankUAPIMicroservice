@@ -9,6 +9,6 @@ namespace BankUAPI.Application.Interface.AddFund
 {
     public interface IAddFundService
     {
-        Task<LoginModel> Process(AddFundRequest obj);
+        Task<LoginModel> Process(AddFundRequest obj, CancellationToken cn);
     }
 }

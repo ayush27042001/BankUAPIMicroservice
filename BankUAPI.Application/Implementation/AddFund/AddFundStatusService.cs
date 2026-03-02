@@ -36,7 +36,7 @@ namespace BankUAPI.Application.Implementation.AddFund
             _httpClientFactory = httpClientFactory;
         }
         private static readonly ConcurrentDictionary<int, SemaphoreSlim> _userLocks = new();
-        public async Task<LoginModel> CheckStatus(StatusCheckRequest obj)
+        public async Task<LoginModel> CheckStatus(StatusCheckRequest obj, CancellationToken cn)
         {
             int userId = Convert.ToInt32(obj.UserId);
 
@@ -138,7 +138,7 @@ namespace BankUAPI.Application.Implementation.AddFund
                 // 💰 CREDIT WALLET (ONLY ONCE)
                 if (paymentStatus == "SUCCESS")
                 {
-                    await CreditWalletAsync(obj.UserId, amount);
+                    await _commonRepository.RefundWalletBalance(Convert.ToInt32(obj.UserId), amount, "Add Fund Success", cn);
                 }
 
                 await _db.SaveChangesAsync();
@@ -217,89 +217,7 @@ namespace BankUAPI.Application.Implementation.AddFund
                 return $"EXCEPTION: {ex.Message}";
             }
         }
-
-        // HANDLE RESPONSE
-        private async Task<(bool isSuccess, string message)> HandleStatusResponseAsync( JObject json, StatusCheckRequest obj, string apiResponse)
-        {
-            try
-            {
-                string scode = json["status"]?.ToString()?.ToUpper();
-
-                if (scode != "TRUE")
-                {
-                    return (false, json["message"]?.ToString() ?? "Status check failed");
-                }
-
-                var resultObj = json["results"];
-
-                string paymentStatus = resultObj["status"]?.ToString()?.ToUpper();
-
-                decimal amount = 0;
-                decimal.TryParse(resultObj["txn_amount"]?.ToString(), out amount);
-
-                // Check duplicate
-                var existing = await _db.Addfunds
-                    .FirstOrDefaultAsync(x => x.OrderId == obj.OrderId);
-
-                if (existing != null && existing.Status.ToUpper() == "SUCCESS")
-                {
-                    return (true, "Already processed");
-                }
-
-                // Update AddFund Table
-                if (existing != null)
-                {
-                    existing.Status = paymentStatus == "SUCCESS" ? "Success" : "Failed";
-                    existing.AmountPaid = amount;
-                    existing.ApiResponse = apiResponse;
-
-                    _db.Addfunds.Update(existing);
-                }
-
-                // Credit Wallet if success
-                if (paymentStatus == "SUCCESS")
-                {
-                    await CreditWalletAsync(obj.UserId, amount);
-                    await _db.SaveChangesAsync();
-
-                    return (true, "Amount credited successfully");
-                }
-
-                await _db.SaveChangesAsync();
-
-                return (false, "Payment failed");
-            }
-            catch
-            {
-                return (false, "Error processing response");
-            }
-        }
-
-        // CREDIT WALLET
-        private async Task CreditWalletAsync(string userId, decimal amount)
-        {
-            int uid = Convert.ToInt32(userId);
-
-            var balanceDict = await _commonRepository.GetLatestBalancesAsync(uid);
-            decimal currentBalance = balanceDict.ContainsKey(uid) ? balanceDict[uid] : 0;
-
-            decimal newBalance = currentBalance + amount;
-
-            var walletEntry = new Tbluserbalance
-            {
-                OldBal = currentBalance,
-                Amount = amount,
-                NewBal = newBalance,
-                TxnType = "Fund Added",
-                CrDrType = "Credit",
-                UserId = uid,
-                Remarks = "Add Fund Success",
-                TxnDatetime = DateTime.Now
-            };
-
-            _db.Tbluserbalances.Add(walletEntry);
-        }
-
+  
         // ✅ USER VALIDATION
         private async Task<bool> IsUserValidAsync(int userId)
         {

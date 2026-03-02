@@ -9,6 +9,6 @@ namespace BankUAPI.Application.Interface.AddFund
 {
     public interface IAddFundStatusService
     {
-        Task<LoginModel> CheckStatus(StatusCheckRequest obj);
+        Task<LoginModel> CheckStatus(StatusCheckRequest obj, CancellationToken cn);
     }
 }

@@ -29,17 +29,19 @@ namespace BankUAPI.Application.Implementation.AddFund
         private readonly AllApiSettings _apiSettings;
         private readonly AppDbContext _db;
         private readonly ICommonRepositry commonRepositry;
+        private readonly IUserRepository _userRepository;
         private readonly IHttpClientFactory _httpClientFactory;
 
-        public AddFundService(IOptions<AllApiSettings> apiSettings, ICommonRepositry CR, AppDbContext db, IHttpClientFactory httpClientFactory)
+        public AddFundService(IOptions<AllApiSettings> apiSettings, ICommonRepositry CR, AppDbContext db, IHttpClientFactory httpClientFactory, IUserRepository userRepository)
         {
             _db = db;
             _apiSettings = apiSettings.Value;
             commonRepositry = CR;
             _httpClientFactory = httpClientFactory;
+            _userRepository = userRepository;
         }
         private static readonly ConcurrentDictionary<int, SemaphoreSlim> _userLocks = new();
-        public async Task<LoginModel> Process(AddFundRequest obj)
+        public async Task<LoginModel> Process(AddFundRequest obj, CancellationToken cn)
         {
             int userId = Convert.ToInt32(obj.UserId);
 
@@ -102,11 +104,9 @@ namespace BankUAPI.Application.Implementation.AddFund
                         Status = "ERR",
                         Message = "Please update your app"
                     };
-                }
-
-                bool isValidUser = await IsUserValidAsync(obj.UserId);
-
-                if (!isValidUser)
+                }                
+                var isvalid = await _userRepository.GetUserData(obj.UserId, cn);
+                if (isvalid==null)
                 {
                     return new LoginModel
                     {
@@ -186,14 +186,6 @@ namespace BankUAPI.Application.Implementation.AddFund
             {
                 semaphore.Release(); // 🔓 ALWAYS RELEASE
             }
-        }
-
-        public async Task<bool> IsUserValidAsync(string userId)
-        {
-            int uid = Convert.ToInt32(userId);
-
-            return await _db.Registrations
-                .AnyAsync(x => x.RegistrationId == uid);
         }
 
         public async Task<string> CreateAddFundOrderAsync(AddFundRequest req)
