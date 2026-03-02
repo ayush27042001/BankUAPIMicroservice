@@ -19,6 +19,7 @@ namespace BankUAPI.Application.Interface
         Task AddDmtTxnReportAsync(Registration userData, string serviceName, string operatorId, string operatorName, string mobile, string accountNo, decimal txnAmount, decimal retailerCharge, string status, string apiName, object apiResponse, string transactionId, string? orderId, string? BankName, string? BeneName, string? Ifsccode, decimal? OldBalance, CancellationToken ct);
         Task<WalletCheckResonse> WalletCheckValidationAsync(int userId, decimal txnAmount, CancellationToken ct = default);
         Task<WalletCheckResonse> RefundWalletBalance(int userId, decimal amount, string Remarks, CancellationToken ct = default);
+        Task<Dictionary<int, decimal>> GetLatestBalancesAsync(params int?[] userIds);
     }
 
 }
