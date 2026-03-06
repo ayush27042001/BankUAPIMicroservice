@@ -18,9 +18,9 @@ namespace BankU.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddFund([FromBody] AddFundRequest request)
+        public async Task<IActionResult> AddFund([FromBody] AddFundRequest request, CancellationToken ct)
         {
-            var result = await _service.Process(request);
+            var result = await _service.Process(request, ct);
             return Ok(result);
         }
     }

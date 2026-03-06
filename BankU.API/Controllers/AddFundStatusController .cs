@@ -17,9 +17,9 @@ namespace BankU.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CheckStatus([FromBody] StatusCheckRequest request)
+        public async Task<IActionResult> CheckStatus([FromBody] StatusCheckRequest request, CancellationToken ct)
         {
-            var result = await _service.CheckStatus(request);
+            var result = await _service.CheckStatus(request, ct);
             return Ok(result);
         }
     }
