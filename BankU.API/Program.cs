@@ -11,6 +11,7 @@ using BankUAPI.Application.Implementation.DMT.InstantPay;
 using BankUAPI.Application.Implementation.Payment_Gateway;
 using BankUAPI.Application.Implementation.Payouts.IDFC;
 using BankUAPI.Application.Implementation.Payouts.IDFC.IDFCHttpClient;
+using BankUAPI.Application.Implementation.Ticket;
 using BankUAPI.Application.Implementation.Validator;
 using BankUAPI.Application.Interface;
 using BankUAPI.Application.Interface.AddFund;
@@ -21,6 +22,7 @@ using BankUAPI.Application.Interface.Commision.CommissionSlabs;
 using BankUAPI.Application.Interface.DMT.Provider;
 using BankUAPI.Application.Interface.Payment_Gateway.PayU;
 using BankUAPI.Application.Interface.Payout.IDFCPayout;
+using BankUAPI.Application.Interface.Ticket;
 using BankUAPI.Application.Interface.Validator;
 using BankUAPI.Application.Middlewear;
 using BankUAPI.Infrastructure.Mongo;
@@ -177,7 +179,10 @@ builder.Services.AddHttpClient("AddFundClient", client =>
 });
 
 builder.Services.Configure<AllApiSettings>(
-    builder.Configuration.GetSection("AllApi")); 
+    builder.Configuration.GetSection("AllApi"));
+
+builder.Services.Configure<TicketSetting>(
+    builder.Configuration.GetSection("Ticket"));
 
 builder.Services.AddHttpClient("IDFCClient", c =>
 {
@@ -242,7 +247,8 @@ builder.Services.AddScoped<DmtProviderFactory>();
 builder.Services.AddScoped<IPayUPaymentService, PayUPaymentService>();
 builder.Services.AddTransient<PaymentGatewayLoggingHandler>();
 builder.Services.AddScoped<IAddFundService, AddFundService>();//Add Fund Service By Sachin
-builder.Services.AddScoped<IAddFundStatusService,AddFundStatusService>();//Add Fund Service By Sachin
+builder.Services.AddScoped<IAddFundStatusService, AddFundStatusService>();//Add Fund Service By Sachin
+builder.Services.AddScoped<ITicketService, TicketService>();//Ticket Service
 var app = builder.Build();
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {

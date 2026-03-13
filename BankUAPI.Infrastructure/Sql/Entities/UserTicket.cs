@@ -18,4 +18,5 @@ public partial class UserTicket
     public DateTime? CreatedAt { get; set; }
 
     public string? Status { get; set; }
+    public string FilePath { get; set; }
 }
