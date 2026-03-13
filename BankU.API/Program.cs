@@ -184,6 +184,10 @@ builder.Services.Configure<AllApiSettings>(
 builder.Services.Configure<TicketSetting>(
     builder.Configuration.GetSection("Ticket"));
 
+builder.Services.Configure<AgreementSetting>(
+    builder.Configuration.GetSection("Agreement"));
+
+
 builder.Services.AddHttpClient("IDFCClient", c =>
 {
     c.DefaultRequestHeaders.Accept
@@ -250,6 +254,7 @@ builder.Services.AddScoped<IAddFundService, AddFundService>();//Add Fund Service
 builder.Services.AddScoped<IAddFundStatusService, AddFundStatusService>();//Add Fund Service By Sachin
 builder.Services.AddScoped<ITicketService, TicketService>();//Ticket Service
 builder.Services.AddScoped<IResetMpinService, ResetMpinService>();//Mpin Service
+builder.Services.AddScoped<IAgreementService, AgreementService>();//Agreement Service
 var app = builder.Build();
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
