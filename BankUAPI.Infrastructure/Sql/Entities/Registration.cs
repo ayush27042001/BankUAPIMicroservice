@@ -83,4 +83,13 @@ public partial class Registration
     public int? ADId { get; set; }
     public int? WLId { get; set; }
     public int? CommissionPlanId { get; set; }
+    public string? aadharUpload { get; set; }
+    public string? panUpload { get; set; }
+    public string? photoUpload { get; set; }
+    public string? gstUpload { get; set; }
+    public string? ShopFrontupload { get; set; }
+    public string? ShopInupload { get; set; }
+    public string? KycApplication { get; set; }
+    public string? BusinessProofUploadtype { get; set; }
+    public string? KycStatus { get; set; }
 }

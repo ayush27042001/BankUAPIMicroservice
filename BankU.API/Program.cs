@@ -8,6 +8,7 @@ using BankUAPI.Application.Implementation.Commision.CommisionHeader;
 using BankUAPI.Application.Implementation.Commision.CommissionPlans;
 using BankUAPI.Application.Implementation.Commision.CommissionSlabs;
 using BankUAPI.Application.Implementation.DMT.InstantPay;
+using BankUAPI.Application.Implementation.KYC;
 using BankUAPI.Application.Implementation.Payment_Gateway;
 using BankUAPI.Application.Implementation.Payouts.IDFC;
 using BankUAPI.Application.Implementation.Payouts.IDFC.IDFCHttpClient;
@@ -20,6 +21,7 @@ using BankUAPI.Application.Interface.Commision.CommisionHeader;
 using BankUAPI.Application.Interface.Commision.CommissionPlans;
 using BankUAPI.Application.Interface.Commision.CommissionSlabs;
 using BankUAPI.Application.Interface.DMT.Provider;
+using BankUAPI.Application.Interface.KYC;
 using BankUAPI.Application.Interface.Payment_Gateway.PayU;
 using BankUAPI.Application.Interface.Payout.IDFCPayout;
 using BankUAPI.Application.Interface.Ticket;
@@ -255,6 +257,9 @@ builder.Services.AddScoped<IAddFundStatusService, AddFundStatusService>();//Add 
 builder.Services.AddScoped<ITicketService, TicketService>();//Ticket Service
 builder.Services.AddScoped<IResetMpinService, ResetMpinService>();//Mpin Service
 builder.Services.AddScoped<IAgreementService, AgreementService>();//Agreement Service
+builder.Services.AddScoped<IInvoiceService, InvoiceService>();//Invoice Service
+builder.Services.AddScoped<IAddKycService, AddKycService>();//KYC Service
+builder.Services.AddScoped<IGetKycService, GetKycService>();
 var app = builder.Build();
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
