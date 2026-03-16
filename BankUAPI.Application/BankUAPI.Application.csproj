@@ -21,4 +21,8 @@
     <ProjectReference Include="..\BankUAPI.SharedKernel\BankUAPI.SharedKernel.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Implementation\NewFolder\" />
+  </ItemGroup>
+
 </Project>
