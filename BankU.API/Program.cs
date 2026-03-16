@@ -3,6 +3,7 @@ using BankUAPI.Application.Handler;
 using BankUAPI.Application.IDFCPayout.Security;
 using BankUAPI.Application.Implementation;
 using BankUAPI.Application.Implementation.AddFund;
+using BankUAPI.Application.Implementation.Bank_Account;
 using BankUAPI.Application.Implementation.Commision.CommisionDistribution;
 using BankUAPI.Application.Implementation.Commision.CommisionHeader;
 using BankUAPI.Application.Implementation.Commision.CommissionPlans;
@@ -16,6 +17,7 @@ using BankUAPI.Application.Implementation.Ticket;
 using BankUAPI.Application.Implementation.Validator;
 using BankUAPI.Application.Interface;
 using BankUAPI.Application.Interface.AddFund;
+using BankUAPI.Application.Interface.BankAccount;
 using BankUAPI.Application.Interface.Commision.CommisionDistribution;
 using BankUAPI.Application.Interface.Commision.CommisionHeader;
 using BankUAPI.Application.Interface.Commision.CommissionPlans;
@@ -189,6 +191,8 @@ builder.Services.Configure<TicketSetting>(
 builder.Services.Configure<AgreementSetting>(
     builder.Configuration.GetSection("Agreement"));
 
+builder.Services.Configure<CashfreeSetting>(
+     builder.Configuration.GetSection("CashFree"));
 
 builder.Services.AddHttpClient("IDFCClient", c =>
 {
@@ -260,6 +264,8 @@ builder.Services.AddScoped<IAgreementService, AgreementService>();//Agreement Se
 builder.Services.AddScoped<IInvoiceService, InvoiceService>();//Invoice Service
 builder.Services.AddScoped<IAddKycService, AddKycService>();//KYC Service
 builder.Services.AddScoped<IGetKycService, GetKycService>();
+builder.Services.AddScoped<IBankAccountService, BankAccountService>();
+builder.Services.AddScoped<IBankDetails,BankDetailsService>();
 var app = builder.Build();
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {
