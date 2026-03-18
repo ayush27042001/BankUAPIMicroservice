@@ -10,20 +10,28 @@ namespace BankU.API.Controllers
     {
         private readonly ITicketService _ticketService;
 
-        public TicketController(ITicketService ticketService)
+        private readonly IGetTicketService _getTicketService;
+
+        public TicketController(ITicketService ticketService, IGetTicketService getTicketService)
         {
             _ticketService = ticketService;
+            _getTicketService = getTicketService;
         }
 
         [HttpPost]
         [Route("create-ticket")]
-        public async Task<IActionResult> CreateTicket(
-            [FromForm] TicketModel model,
-            IFormFile file,
-            CancellationToken cn)
+        public async Task<IActionResult> CreateTicket([FromForm] TicketModel model, IFormFile file, CancellationToken cn)
         {
             var result = await _ticketService.CreateTicketAsync(model, file, cn);
 
+            return Ok(result);
+        }
+        [HttpPost]
+        [Route("get-ticket")]
+        public async Task<IActionResult> GetTickets(
+        [FromBody] GetTicketRequest request, CancellationToken cn)
+        {
+            var result = await _getTicketService.GetTicketsAsync(request.UserId, cn);
             return Ok(result);
         }
     }
