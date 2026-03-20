@@ -16,12 +16,14 @@ namespace BankUAPI.SharedKernel.Response
     public class AgreementData
     {
         public int Id { get; set; }
-        public string UserId { get; set; }
-        public string AgreementId { get; set; }
-        public string AgreementType { get; set; }
-        public string FilePath { get; set; }
-        public string Status { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public string FullName { get; set; }
+        public string? UserId { get; set; }
+        public string? AgreementId { get; set; }
+        public string? AgreementType { get; set; }
+        public string? FilePath { get; set; }
+        public string? Status { get; set; }
+        public DateTime? CreatedAt { get; set; }
+        public string? FullName { get; set; }
+        public string? UserSignedPath { get; set; }
+        public string? AdminSignedPath { get; set; }
     }
 }

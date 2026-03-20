@@ -267,6 +267,8 @@ builder.Services.AddScoped<IGetKycService, GetKycService>();
 builder.Services.AddScoped<IBankAccountService, BankAccountService>();
 builder.Services.AddScoped<IBankDetails,BankDetailsService>();
 builder.Services.AddScoped<IGetTicketService, GetTicketService>();
+builder.Services.AddScoped<IAgreementSignService, AgreementSignService>();
+
 var app = builder.Build();
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
 {

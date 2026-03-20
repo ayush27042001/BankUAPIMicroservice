@@ -20,4 +20,7 @@ public partial class UserAgreement
     public DateTime? CreatedAt { get; set; }
 
     public string? FullName { get; set; }
+    public string? UserSignedPath { get; set; }
+    public string? AdminSignedPath { get; set; }
+
 }

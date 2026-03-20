@@ -10,7 +10,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using static Org.BouncyCastle.Math.EC.ECCurve;
+
 
 namespace BankUAPI.Application.Implementation
 {
