@@ -8,6 +8,6 @@ namespace BankUAPI.SharedKernel.AppSettingModel.AddFund
 {
     public class AgreementSetting
     {
-        public string BaseUrl { get; set; }
+        public string? BaseUrl { get; set; }
     }
 }

@@ -30,16 +30,7 @@ namespace BankUAPI.Application.Implementation
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(userId))
-                {
-                    return new AgreementResponse
-                    {
-                        Status = "ERR",
-                        Message = "UserId is required"
-                    };
-                }
-
-                if (!long.TryParse(userId, out long userIdValue))
+                if (!long.TryParse(userId, out long uid))
                 {
                     return new AgreementResponse
                     {
@@ -48,9 +39,8 @@ namespace BankUAPI.Application.Implementation
                     };
                 }
 
-                // Check if user exists
-                bool userExists = await _db.Registrations
-                    .AnyAsync(x => x.RegistrationId == userIdValue, cn);
+                var userExists = await _db.Registrations
+                    .AnyAsync(x => x.RegistrationId == uid, cn);
 
                 if (!userExists)
                 {
@@ -61,35 +51,35 @@ namespace BankUAPI.Application.Implementation
                     };
                 }
 
-                var agreements = await _db.UserAgreements
-                    .Where(x => x.UserId == userIdValue)
-                    .Select(x => new AgreementData
-                    {
-                        Id = x.Id,
-                        UserId = x.UserId.ToString(),
-                        AgreementId = x.AgreementId,
-                        AgreementType = x.AgreementType,
-                        FilePath = $"{_AgreementSetting.BaseUrl.TrimEnd('/')}/{x.FilePath.Replace("~/", "").TrimStart('/')}",
-                        Status = x.Status,
-                        CreatedAt = Convert.ToDateTime(x.CreatedAt),
-                        FullName = x.FullName
-                    })
+                string baseUrl = _AgreementSetting.BaseUrl.TrimEnd('/');
+
+                var rawData = await _db.UserAgreements
+                    .Where(x => x.UserId == uid)
+                    .OrderByDescending(x => x.Id)
                     .ToListAsync(cn);
 
-                if (!agreements.Any())
+                var data = rawData.Select(x => new AgreementData
                 {
-                    return new AgreementResponse
-                    {
-                        Status = "ERR",
-                        Message = "No agreement found for this user"
-                    };
-                }
+                    Id = x.Id,
+                    UserId = x.UserId.ToString(),
+                    AgreementId = x.AgreementId,
+                    AgreementType = x.AgreementType ?? "",
+
+                    FilePath = GetFullUrl(x.FilePath, baseUrl),
+                    UserSignedPath = GetFullUrl(x.UserSignedPath, baseUrl),
+                    AdminSignedPath = GetFullUrl(x.AdminSignedPath, baseUrl),
+
+                    Status = x.Status ?? "",
+                    FullName = x.FullName ?? "",
+                    CreatedAt = x.CreatedAt ?? DateTime.MinValue
+                }).ToList();
+                    
 
                 return new AgreementResponse
                 {
-                    Status = "SUCCESS",
-                    Message = "Agreement fetched successfully",
-                    Data = agreements
+                    Status = data.Any() ? "SUCCESS" : "ERR",
+                    Message = data.Any() ? "Agreement fetched successfully" : "No agreement found",
+                    Data = data
                 };
             }
             catch (Exception ex)
@@ -100,6 +90,19 @@ namespace BankUAPI.Application.Implementation
                     Message = ex.Message
                 };
             }
+
+        }
+        private string GetFullUrl(string path, string baseUrl)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                return "";
+
+            path = path.Replace("~/", "").Trim();
+
+            if (path.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                return path;
+
+            return $"{baseUrl}/{path.TrimStart('/')}";
         }
     }
 }

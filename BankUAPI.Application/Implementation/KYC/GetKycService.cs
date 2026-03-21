@@ -117,7 +117,7 @@ namespace BankUAPI.Application.Implementation.KYC
                 {
                     Status = "SUCCESS",
                     Message = "KYC fetched successfully",
-                    KycStatus = user.KycStatus,
+                   KycStatus = MapKycStatus(user.KycStatus),
                     Documents = documents
                 };
             }
@@ -137,15 +137,32 @@ namespace BankUAPI.Application.Implementation.KYC
             if (string.IsNullOrWhiteSpace(filePath))
                 return null;
 
-            // If already full URL, return as-is
             if (filePath.StartsWith("http://") || filePath.StartsWith("https://"))
                 return filePath;
 
-            // Remove "~/" if present
             filePath = filePath.Replace("~/", "");
 
-            // Attach BaseUrl
             return $"{_agreementSettings.BaseUrl.TrimEnd('/')}/{filePath.TrimStart('/')}";
+        }
+        private string MapKycStatus(string status)
+        {
+            if (string.IsNullOrWhiteSpace(status))
+                return "Pending";
+
+            switch (status.Trim().ToLower())
+            {
+                case "pending":
+                    return "Review";
+
+                case "reupload":
+                    return "Clarification";
+
+                case "complete":
+                    return "Approved";
+
+                default:
+                    return status;
+            }
         }
     }
 }
