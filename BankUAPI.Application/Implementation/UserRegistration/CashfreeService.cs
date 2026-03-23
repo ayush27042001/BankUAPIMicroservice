@@ -1,0 +1,220 @@
+﻿using BankUAPI.Application.Interface.UserRegistration;
+using BankUAPI.SharedKernel.AppSettingModel.AddFund;
+using BankUAPI.SharedKernel.Request.BankAccount;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json.Linq;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
+
+namespace BankUAPI.Application.Implementation.UserRegistration
+{
+    public class CashfreeService : ICashfreeService
+    {
+        private readonly IHttpClientFactory _http;
+        private readonly CashfreeSetting _config;
+
+        public CashfreeService(IHttpClientFactory http, IOptions<CashfreeSetting> config)
+        {
+            _http = http;
+            _config = config.Value;
+        }
+
+        public async Task<PanVerifyResult> VerifyPanAsync(string pan)
+        {
+            var client = _http.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Post,
+                $"{_config.BaseUrl}verification/pan");
+
+            request.Headers.Add("x-client-id", _config.ClientId);
+            request.Headers.Add("x-client-secret", _config.ClientSecret);
+
+            request.Content = new StringContent(
+                JsonSerializer.Serialize(new { pan }),
+                Encoding.UTF8,
+                "application/json");
+
+            var response = await client.SendAsync(request);
+            var content = await response.Content.ReadAsStringAsync();
+
+            var json = JObject.Parse(content);
+
+            return new PanVerifyResult
+            {
+                IsValid = json["valid"]?.ToString() == "True",
+                Name = json["registered_name"]?.ToString(),
+                Type = json["type"]?.ToString()
+            };
+        }
+
+        public async Task<PanVerifyResult> VerifyBusinessPanAsync(string pan)
+        {
+            var result = await VerifyPanAsync(pan);
+
+            result.IsValid = (result.IsValid ?? false) &&
+                     string.Equals(result.Type, "COMPANY", StringComparison.OrdinalIgnoreCase);
+
+            return result;
+        }
+
+        public async Task<AadhaarOtpResult> SendAadhaarOtpAsync(string aadhaar)
+        {
+            var client = _http.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Post,
+                $"{_config.BaseUrl}verification/offline-aadhaar/otp");
+
+            request.Headers.Add("x-client-id", _config.ClientId);
+            request.Headers.Add("x-client-secret", _config.ClientSecret);
+
+            request.Content = new StringContent(
+                JsonSerializer.Serialize(new { aadhaar_number = aadhaar }),
+                Encoding.UTF8,
+                "application/json");
+
+            var response = await client.SendAsync(request);
+            var content = await response.Content.ReadAsStringAsync();
+
+            var json = JObject.Parse(content);
+
+            return new AadhaarOtpResult
+            {
+                Success = json["status"]?.ToString() == "SUCCESS",
+                RefId = json["ref_id"]?.ToString(),
+                Message = json["message"]?.ToString()
+            };
+        }
+
+        public async Task<AadhaarVerifyResult> VerifyAadhaarAsync(string otp, string refId, string panName)
+        {
+            var client = _http.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Post,
+                $"{_config.BaseUrl}verification/offline-aadhaar/verify");
+
+            request.Headers.Add("x-client-id", _config.ClientId);
+            request.Headers.Add("x-client-secret", _config.ClientSecret);
+
+            request.Content = new StringContent(
+                JsonSerializer.Serialize(new { otp, ref_id = refId }),
+                Encoding.UTF8,
+                "application/json");
+
+            var response = await client.SendAsync(request);
+            var content = await response.Content.ReadAsStringAsync();
+
+            var json = JObject.Parse(content);
+
+            string name = json["name"]?.ToString()?.ToUpper();
+
+            if (json["status"]?.ToString() != "VALID" || name != panName.ToUpper())
+            {
+                return new AadhaarVerifyResult { Success = false };
+            }
+
+            return new AadhaarVerifyResult
+            {
+                Success = true,
+                Name = name,
+                Address = json["address"]?.ToString(),
+                DOB = json["dob"]?.ToString(),
+                Gender = json["gender"]?.ToString(),
+                State = json["split_address"]?["state"]?.ToString(),
+                Pincode = json["split_address"]?["pincode"]?.ToString()
+            };
+        }
+        public async Task<GstVerifyResult> VerifyGstAsync(string gst, string businessName)
+        {
+            var client = _http.CreateClient();
+
+            var request = new HttpRequestMessage(HttpMethod.Post,
+                $"{_config.BaseUrl}verification/gstin");
+
+            request.Headers.Add("x-client-id", _config.ClientId);
+            request.Headers.Add("x-client-secret", _config.ClientSecret);
+
+            request.Content = new StringContent(
+                JsonSerializer.Serialize(new
+                {
+                    GSTIN = gst,
+                    business_name = businessName
+                }),
+                Encoding.UTF8,
+                "application/json");
+
+            var response = await client.SendAsync(request);
+            var content = await response.Content.ReadAsStringAsync();
+
+            var json = JObject.Parse(content);
+
+            return new GstVerifyResult
+            {
+                IsValid = json["valid"]?.ToString() == "True",
+                LegalName = json["legal_name_of_business"]?.ToString(),
+                TradeName = json["trade_name_of_business"]?.ToString()
+            };
+        }
+        public async Task<CinVerifyResult> VerifyCinAsync( string cin, string panName)
+        {
+            var client = _http.CreateClient();
+
+            string externalRef = "UDYAM" + new Random().Next(100000, 999999);
+
+            var request = new HttpRequestMessage(HttpMethod.Post,
+                $"{_config.BaseUrl}verification/cin");
+
+            request.Headers.Add("x-client-id", _config.ClientId);
+            request.Headers.Add("x-client-secret", _config.ClientSecret);
+
+            request.Content = new StringContent(
+                JsonSerializer.Serialize(new
+                {
+                    verification_id = externalRef,
+                    cin = cin
+                }),
+                Encoding.UTF8,
+                "application/json");
+
+            var response = await client.SendAsync(request);
+            var content = await response.Content.ReadAsStringAsync();
+
+            var json = JObject.Parse(content);
+
+            string status = json["status"]?.ToString()?.ToUpper();
+
+            if (status != "VALID")
+            {
+                return new CinVerifyResult { IsValid = false };
+            }
+
+            bool directorMatched = false;
+
+            var directors = json["director_details"] as JArray;
+
+            if (directors != null)
+            {
+                foreach (var director in directors)
+                {
+                    string name = director["name"]?.ToString()?.ToUpper();
+
+                    if (name == panName?.ToUpper())
+                    {
+                        directorMatched = true;
+                        break;
+                    }
+                }
+            }
+
+            return new CinVerifyResult
+            {
+                IsValid = true,
+                CompanyName = json["company_name"]?.ToString(),
+                IsDirectorMatched = directorMatched
+            };
+        }
+    }
+}

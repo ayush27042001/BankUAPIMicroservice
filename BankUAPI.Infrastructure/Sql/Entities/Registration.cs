@@ -92,4 +92,6 @@ public partial class Registration
     public string? KycApplication { get; set; }
     public string? BusinessProofUploadtype { get; set; }
     public string? KycStatus { get; set; }
+    public string? RmId { get; set; }
+    
 }
