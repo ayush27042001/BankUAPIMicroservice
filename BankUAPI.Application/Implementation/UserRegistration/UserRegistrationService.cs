@@ -25,7 +25,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
         }
 
         // ================= STEP 1 =================
-        public async Task<ApiResponse<Step1Response>> Step1Async(Step1Request req)
+        public async Task<ApiResponse<Step1Response>> Step1(Step1Request req)
         {
             if (string.IsNullOrEmpty(req.Pan) || string.IsNullOrEmpty(req.Mpin))
                 return Error<Step1Response>("All fields required");
@@ -40,7 +40,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
 
             if (exists)
                 return Error<Step1Response>("User already exists");
-            var panResult = await _cashfree.VerifyPanAsync(req.Pan);
+            var panResult = await _cashfree.VerifyPan(req.Pan);
 
             if (!(panResult.IsValid ?? false) || !string.Equals(panResult.Type, "INDIVIDUAL", StringComparison.OrdinalIgnoreCase))
 
@@ -56,7 +56,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
                 Mpin = req.Mpin,
                 Panno = req.Pan,
                 RegistrationStatus = "Pan",
-                UserType = "Retailer",
+                UserType = req.UserType,
                 RegDate = Convert.ToString(DateTime.Now),
                 Status = "1"
             };
@@ -72,7 +72,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
         }
 
         // ================= STEP 2 =================
-        public async Task<ApiResponse<MessageResponse>> Step2Async(Step2Request req)
+        public async Task<ApiResponse<MessageResponse>> Step2(Step2Request req)
         {
             var user = await _db.Registrations.FindAsync(req.RegistrationId);
 
@@ -90,14 +90,14 @@ namespace BankUAPI.Application.Implementation.UserRegistration
         }
 
         // ================= STEP 3 =================
-        public async Task<ApiResponse<MessageResponse>> Step3Async(Step3Request req)
+        public async Task<ApiResponse<MessageResponse>> Step3(Step3Request req)
         {
             var user = await _db.Registrations.FindAsync(req.RegistrationId);
 
             if (user == null)
                 return Error<MessageResponse>("User not found");
 
-            var panResult = await _cashfree.VerifyBusinessPanAsync(req.BusinessPan);
+            var panResult = await _cashfree.VerifyBusinessPan(req.BusinessPan);
 
             if (panResult == null || !(panResult.IsValid ?? false))
                 return Error<MessageResponse>("Invalid company PAN");
@@ -107,7 +107,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
             user.CompanyName = req.BusinessName;
             if (proofType == "GST")
             {
-                var gstResult = await _cashfree.VerifyGstAsync(req.ProofNumber, req.BusinessName);
+                var gstResult = await _cashfree.VerifyGst(req.ProofNumber, req.BusinessName);
 
                 if (gstResult == null)
                     return Error<MessageResponse>("GST verification failed");
@@ -121,7 +121,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
 
             else if (proofType == "CIN")
             {
-                var cinResult = await _cashfree.VerifyCinAsync(
+                var cinResult = await _cashfree.VerifyCin(
                     req.ProofNumber,
                     panName
                 );
@@ -150,7 +150,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
         }
 
         // ================= STEP 4 =================
-        public async Task<ApiResponse<MessageResponse>> Step4Async(Step4Request req)
+        public async Task<ApiResponse<MessageResponse>> Step4(Step4Request req)
         {
             var user = await _db.Registrations.FindAsync(req.RegistrationId);
 
@@ -162,7 +162,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
                 return Error<MessageResponse>("OTP and RefId required");
             }
 
-                var result = await _cashfree.VerifyAadhaarAsync(
+                var result = await _cashfree.VerifyAadhaar(
                     req.Otp,
                     req.RefId,
                     user.FullName
@@ -185,7 +185,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
         }
 
         // ================= STEP 5 =================
-        public async Task<ApiResponse<MessageResponse>> CompleteAsync(Step5Request req)
+        public async Task<ApiResponse<MessageResponse>> Complete(Step5Request req)
         {
             var user = await _db.Registrations.FindAsync(req.RegistrationId);
 
@@ -204,7 +204,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
 
             return Success(new MessageResponse { Result = "Registration completed" });
         }
-        public async Task<ApiResponse<AadhaarOtpResult>> SendAadhaarOtpAsync(AadhaarOtpRequest req)
+        public async Task<ApiResponse<AadhaarOtpResult>> SendAadhaarOtp(AadhaarOtpRequest req)
         {
             var user = await _db.Registrations.FindAsync(req.RegistrationId);
 
@@ -214,7 +214,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
             if (string.IsNullOrWhiteSpace(req.Aadhaar))
                 return Error<AadhaarOtpResult>("Aadhaar is required");
 
-            var result = await _cashfree.SendAadhaarOtpAsync(req.Aadhaar);
+            var result = await _cashfree.SendAadhaarOtp(req.Aadhaar);
 
             if (!(result.Success ?? false))
                 return Error<AadhaarOtpResult>(result.Message ?? "OTP failed");

@@ -23,7 +23,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
             _config = config.Value;
         }
 
-        public async Task<PanVerifyResult> VerifyPanAsync(string pan)
+        public async Task<PanVerifyResult> VerifyPan(string pan)
         {
             var client = _http.CreateClient();
 
@@ -51,9 +51,9 @@ namespace BankUAPI.Application.Implementation.UserRegistration
             };
         }
 
-        public async Task<PanVerifyResult> VerifyBusinessPanAsync(string pan)
+        public async Task<PanVerifyResult> VerifyBusinessPan(string pan)
         {
-            var result = await VerifyPanAsync(pan);
+            var result = await VerifyPan(pan);
 
             result.IsValid = (result.IsValid ?? false) &&
                      string.Equals(result.Type, "COMPANY", StringComparison.OrdinalIgnoreCase);
@@ -61,7 +61,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
             return result;
         }
 
-        public async Task<AadhaarOtpResult> SendAadhaarOtpAsync(string aadhaar)
+        public async Task<AadhaarOtpResult> SendAadhaarOtp(string aadhaar)
         {
             var client = _http.CreateClient();
 
@@ -89,7 +89,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
             };
         }
 
-        public async Task<AadhaarVerifyResult> VerifyAadhaarAsync(string otp, string refId, string panName)
+        public async Task<AadhaarVerifyResult> VerifyAadhaar(string otp, string refId, string panName)
         {
             var client = _http.CreateClient();
 
@@ -127,7 +127,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
                 Pincode = json["split_address"]?["pincode"]?.ToString()
             };
         }
-        public async Task<GstVerifyResult> VerifyGstAsync(string gst, string businessName)
+        public async Task<GstVerifyResult> VerifyGst(string gst, string businessName)
         {
             var client = _http.CreateClient();
 
@@ -158,7 +158,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
                 TradeName = json["trade_name_of_business"]?.ToString()
             };
         }
-        public async Task<CinVerifyResult> VerifyCinAsync( string cin, string panName)
+        public async Task<CinVerifyResult> VerifyCin( string cin, string panName)
         {
             var client = _http.CreateClient();
 
