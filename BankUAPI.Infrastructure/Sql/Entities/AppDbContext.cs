@@ -87,6 +87,9 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<Recharge> Recharges { get; set; }
 
+    public virtual DbSet<LoanApplications> LoanApplications { get; set; }
+    public virtual DbSet<LoanTermsSanction> LoanTermsSanction { get; set; }
+
     public virtual DbSet<Registration> Registrations { get; set; }
 
     public virtual DbSet<ServiceActivation> ServiceActivations { get; set; }
@@ -140,7 +143,10 @@ public partial class AppDbContext : DbContext
         modelBuilder.Entity<ApiIdempotency>()
             .Property(x => x.RequestHash)
             .HasMaxLength(64);
-
+        modelBuilder.Entity<LoanApplications>()
+      .ToTable("LoanApplications", "dbo");
+        modelBuilder.Entity<LoanTermsSanction>()
+     .ToTable("LoanTermsSanction", "dbo");
         modelBuilder.Entity<AddContact>(entity =>
         {
             entity

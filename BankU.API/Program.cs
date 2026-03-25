@@ -10,6 +10,7 @@ using BankUAPI.Application.Implementation.Commision.CommissionPlans;
 using BankUAPI.Application.Implementation.Commision.CommissionSlabs;
 using BankUAPI.Application.Implementation.DMT.InstantPay;
 using BankUAPI.Application.Implementation.KYC;
+using BankUAPI.Application.Implementation.MicroLoan;
 using BankUAPI.Application.Implementation.Payment_Gateway;
 using BankUAPI.Application.Implementation.Payouts.IDFC;
 using BankUAPI.Application.Implementation.Payouts.IDFC.IDFCHttpClient;
@@ -25,6 +26,7 @@ using BankUAPI.Application.Interface.Commision.CommissionPlans;
 using BankUAPI.Application.Interface.Commision.CommissionSlabs;
 using BankUAPI.Application.Interface.DMT.Provider;
 using BankUAPI.Application.Interface.KYC;
+using BankUAPI.Application.Interface.MicroLoan;
 using BankUAPI.Application.Interface.Payment_Gateway.PayU;
 using BankUAPI.Application.Interface.Payout.IDFCPayout;
 using BankUAPI.Application.Interface.Ticket;
@@ -272,6 +274,7 @@ builder.Services.AddScoped<IGetTicketService, GetTicketService>();
 builder.Services.AddScoped<IAgreementSignService, AgreementSignService>();
 builder.Services.AddScoped<IUserRegistrationService, UserRegistrationService>();
 builder.Services.AddScoped<ICashfreeService, CashfreeService>();
+builder.Services.AddScoped<ILoanService, LoanService>();
 
 var app = builder.Build();
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
