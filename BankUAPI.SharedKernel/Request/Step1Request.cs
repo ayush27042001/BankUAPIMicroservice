@@ -12,6 +12,7 @@ namespace BankUAPI.SharedKernel.Request
         public string Mpin { get; set; }
         public string ConfirmMpin { get; set; }
         public string Mobile { get; set; }
+        public string UserType { get; set; }
     }
 
     public class Step2Request
