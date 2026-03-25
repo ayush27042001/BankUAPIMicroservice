@@ -14,6 +14,7 @@ using BankUAPI.Application.Implementation.Payment_Gateway;
 using BankUAPI.Application.Implementation.Payouts.IDFC;
 using BankUAPI.Application.Implementation.Payouts.IDFC.IDFCHttpClient;
 using BankUAPI.Application.Implementation.Ticket;
+using BankUAPI.Application.Implementation.UserRegistration;
 using BankUAPI.Application.Implementation.Validator;
 using BankUAPI.Application.Interface;
 using BankUAPI.Application.Interface.AddFund;
@@ -27,6 +28,7 @@ using BankUAPI.Application.Interface.KYC;
 using BankUAPI.Application.Interface.Payment_Gateway.PayU;
 using BankUAPI.Application.Interface.Payout.IDFCPayout;
 using BankUAPI.Application.Interface.Ticket;
+using BankUAPI.Application.Interface.UserRegistration;
 using BankUAPI.Application.Interface.Validator;
 using BankUAPI.Application.Middlewear;
 using BankUAPI.Infrastructure.Mongo;
@@ -268,6 +270,8 @@ builder.Services.AddScoped<IBankAccountService, BankAccountService>();
 builder.Services.AddScoped<IBankDetails,BankDetailsService>();
 builder.Services.AddScoped<IGetTicketService, GetTicketService>();
 builder.Services.AddScoped<IAgreementSignService, AgreementSignService>();
+builder.Services.AddScoped<IUserRegistrationService, UserRegistrationService>();
+builder.Services.AddScoped<ICashfreeService, CashfreeService>();
 
 var app = builder.Build();
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
