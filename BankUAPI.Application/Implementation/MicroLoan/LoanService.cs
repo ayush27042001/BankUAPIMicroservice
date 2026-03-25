@@ -37,7 +37,7 @@ namespace BankUAPI.Application.Implementation.MicroLoan
         }
 
         // ================= CHECK LEAD =================
-        public async Task<ApiResponse<CheckLeadResponse>> CheckLeadAsync(CheckLeadRequest request, CancellationToken cn)
+        public async Task<ApiResponse<CheckLeadResponse>> CheckLead(CheckLeadRequest request, CancellationToken cn)
         {
             var existing = await _db.LoanApplications
                 .Where(x => x.Mobile == request.Mobile && x.Email == request.Email)
@@ -59,7 +59,7 @@ namespace BankUAPI.Application.Implementation.MicroLoan
         }
 
         // ================= CREATE =================
-        public async Task<ApiResponse<CreateLoanResponse>> CreateApplicationAsync(CreateLoanRequest request, CancellationToken cn)
+        public async Task<ApiResponse<CreateLoanResponse>> CreateApplication(CreateLoanRequest request, CancellationToken cn)
         {
             try
             {
@@ -120,7 +120,7 @@ namespace BankUAPI.Application.Implementation.MicroLoan
         }
 
         // ================= UPLOAD =================
-        public async Task<ApiResponse<string>> UploadDocumentsAsync(UploadLoanDocsRequest request, CancellationToken cn)
+        public async Task<ApiResponse<string>> UploadDocuments(UploadLoanDocsRequest request, CancellationToken cn)
         {
             if (!int.TryParse(request.ApplicationId, out int appId))
                 return Error<string>("Invalid ApplicationId");
@@ -184,7 +184,7 @@ namespace BankUAPI.Application.Implementation.MicroLoan
         }
 
         // ================= STATUS =================
-        public async Task<ApiResponse<LoanStatusResponse>> GetLoanStatusAsync(LoanStatusRequest request, CancellationToken cn)
+        public async Task<ApiResponse<LoanStatusResponse>> GetLoanStatus(LoanStatusRequest request, CancellationToken cn)
         {
             int appId = Convert.ToInt32(request.ApplicationId);
 
@@ -219,7 +219,7 @@ namespace BankUAPI.Application.Implementation.MicroLoan
         }
 
         // ================= TERMS =================
-        public async Task<ApiResponse<LoanTermsResponse>> GetLoanTermsAsync(LoanTermsRequest request, CancellationToken cn)
+        public async Task<ApiResponse<LoanTermsResponse>> GetLoanTerms(LoanTermsRequest request, CancellationToken cn)
         {
             int appId = Convert.ToInt32(request.ApplicationId);
 
@@ -242,7 +242,7 @@ namespace BankUAPI.Application.Implementation.MicroLoan
         }
 
         // ================= DISBURSAL =================
-        public async Task<ApiResponse<LoanDisbursalResponse>> GetDisbursalAsync(LoanDisbursalRequest request, CancellationToken cn)
+        public async Task<ApiResponse<LoanDisbursalResponse>> GetDisbursal(LoanDisbursalRequest request, CancellationToken cn)
         {
             int appId = Convert.ToInt32(request.ApplicationId);
 
