@@ -100,6 +100,8 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<Tbloperator> Tbloperators { get; set; }
 
+    public virtual DbSet<tblcircle> tblcircle { get; set; }
+
     public virtual DbSet<Tbluserbalance> Tbluserbalances { get; set; }
     public virtual DbSet<UserBanks> UserBanks { get; set; }
 

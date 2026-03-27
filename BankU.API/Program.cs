@@ -14,6 +14,7 @@ using BankUAPI.Application.Implementation.MicroLoan;
 using BankUAPI.Application.Implementation.Payment_Gateway;
 using BankUAPI.Application.Implementation.Payouts.IDFC;
 using BankUAPI.Application.Implementation.Payouts.IDFC.IDFCHttpClient;
+using BankUAPI.Application.Implementation.Recharge;
 using BankUAPI.Application.Implementation.Ticket;
 using BankUAPI.Application.Implementation.UserRegistration;
 using BankUAPI.Application.Implementation.Validator;
@@ -29,6 +30,7 @@ using BankUAPI.Application.Interface.KYC;
 using BankUAPI.Application.Interface.MicroLoan;
 using BankUAPI.Application.Interface.Payment_Gateway.PayU;
 using BankUAPI.Application.Interface.Payout.IDFCPayout;
+using BankUAPI.Application.Interface.Recharge;
 using BankUAPI.Application.Interface.Ticket;
 using BankUAPI.Application.Interface.UserRegistration;
 using BankUAPI.Application.Interface.Validator;
@@ -195,6 +197,9 @@ builder.Services.Configure<TicketSetting>(
 builder.Services.Configure<AgreementSetting>(
     builder.Configuration.GetSection("Agreement"));
 
+builder.Services.Configure<MPlan>(
+    builder.Configuration.GetSection("MPlan"));
+
 builder.Services.Configure<CashfreeSetting>(
      builder.Configuration.GetSection("CashFree"));
 
@@ -275,6 +280,7 @@ builder.Services.AddScoped<IAgreementSignService, AgreementSignService>();
 builder.Services.AddScoped<IUserRegistrationService, UserRegistrationService>();
 builder.Services.AddScoped<ICashfreeService, CashfreeService>();
 builder.Services.AddScoped<ILoanService, LoanService>();
+builder.Services.AddScoped<IRechargePlanService, RechargePlanService>();
 
 var app = builder.Build();
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
