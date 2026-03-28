@@ -17,5 +17,6 @@ namespace BankUAPI.SharedKernel.Response.Recharge
     {
         public string CircleCode { get; set; } = "";
         public string CircleName { get; set; } = "";
+        public string INSPayCode { get; set; } = "";
     }
 }

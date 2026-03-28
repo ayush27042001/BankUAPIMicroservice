@@ -13,5 +13,6 @@ namespace BankUAPI.Infrastructure.Sql.Entities
         public string? CircleCode { get; set; }
 
         public string? CircleName { get; set; } = null!;
+        public string? INSPAYCircle { get; set; } = null!;
     }
 }

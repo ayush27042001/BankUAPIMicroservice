@@ -133,7 +133,8 @@ namespace BankUAPI.Application.Implementation.Recharge
                 .Select(x => new CircleDetails
                 {
                     CircleCode = x.CircleCode,
-                    CircleName = x.CircleName
+                    CircleName = x.CircleName,
+                    INSPayCode = x.INSPAYCircle
                 })
                 .ToListAsync(ct);
 
