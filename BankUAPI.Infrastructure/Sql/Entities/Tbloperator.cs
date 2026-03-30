@@ -16,4 +16,6 @@ public partial class Tbloperator
     public string? Status { get; set; }
 
     public string? Spkey { get; set; }
+    public string? INSPay { get; set; }
+    public string? MPlan { get; set; }
 }
