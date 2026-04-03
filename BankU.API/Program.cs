@@ -199,6 +199,8 @@ builder.Services.Configure<AgreementSetting>(
 
 builder.Services.Configure<MPlan>(
     builder.Configuration.GetSection("MPlan"));
+builder.Services.Configure<PlanApi>(
+    builder.Configuration.GetSection("PlanApi"));
 
 builder.Services.Configure<CashfreeSetting>(
      builder.Configuration.GetSection("CashFree"));
@@ -281,6 +283,8 @@ builder.Services.AddScoped<IUserRegistrationService, UserRegistrationService>();
 builder.Services.AddScoped<ICashfreeService, CashfreeService>();
 builder.Services.AddScoped<ILoanService, LoanService>();
 builder.Services.AddScoped<IRechargePlanService, RechargePlanService>();
+builder.Services.AddScoped<IBillPaymentService, BillPaymentService>();
+builder.Services.AddScoped<IFetchHlrService, FetchHlrService>();
 
 var app = builder.Build();
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
