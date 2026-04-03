@@ -115,6 +115,8 @@ public partial class AppDbContext : DbContext
 
     public DbSet<CommissionHeader> CommissionHeader { get; set; }
     public DbSet<CommissionSlab> CommissionSlabs { get; set; }
+    public DbSet<INSBiller> INSBiller { get; set; }
+    public DbSet<INSOperator> INSOperator { get; set; }
     public DbSet<CommissionDistribution> CommissionDistribution { get; set; }
 
     public DbSet<MasterProvider> MASTER_PROVIDER { get; set; } = null!;
