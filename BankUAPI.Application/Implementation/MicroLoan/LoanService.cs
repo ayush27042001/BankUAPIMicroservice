@@ -21,22 +21,20 @@ namespace BankUAPI.Application.Implementation.MicroLoan
     {
         private readonly AppDbContext _db;
         private readonly TicketSetting _TicketSetting;
+        private readonly AgreementSetting _agreementSetting;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ICashfreeService _cashfreeService;
 
-        public LoanService(
-             IOptions<TicketSetting> TicketSetting,
-            AppDbContext db,
-            IHttpClientFactory httpClientFactory,
-            ICashfreeService cashfreeService)
+        public LoanService( IOptions<TicketSetting> TicketSetting, AppDbContext db, IOptions<AgreementSetting> AgreementSetting,
+            IHttpClientFactory httpClientFactory,  ICashfreeService cashfreeService)
         {
             _db = db;
             _TicketSetting = TicketSetting.Value;
+            _agreementSetting = AgreementSetting.Value;
             _httpClientFactory = httpClientFactory;
             _cashfreeService = cashfreeService;
         }
 
-        // ================= CHECK LEAD =================
         public async Task<ApiResponse<CheckLeadResponse>> CheckLead(CheckLeadRequest request, CancellationToken cn)
         {
             var existing = await _db.LoanApplications
@@ -58,7 +56,6 @@ namespace BankUAPI.Application.Implementation.MicroLoan
             }, "Existing application found");
         }
 
-        // ================= CREATE =================
         public async Task<ApiResponse<CreateLoanResponse>> CreateApplication(CreateLoanRequest request, CancellationToken cn)
         {
             try
@@ -119,7 +116,6 @@ namespace BankUAPI.Application.Implementation.MicroLoan
             }
         }
 
-        // ================= UPLOAD =================
         public async Task<ApiResponse<string>> UploadDocuments(UploadLoanDocsRequest request, CancellationToken cn)
         {
             if (!int.TryParse(request.ApplicationId, out int appId))
@@ -183,7 +179,6 @@ namespace BankUAPI.Application.Implementation.MicroLoan
             return Success("Documents uploaded successfully");
         }
 
-        // ================= STATUS =================
         public async Task<ApiResponse<LoanStatusResponse>> GetLoanStatus(LoanStatusRequest request, CancellationToken cn)
         {
             int appId = Convert.ToInt32(request.ApplicationId);
@@ -218,7 +213,6 @@ namespace BankUAPI.Application.Implementation.MicroLoan
             }, "Status fetched");
         }
 
-        // ================= TERMS =================
         public async Task<ApiResponse<LoanTermsResponse>> GetLoanTerms(LoanTermsRequest request, CancellationToken cn)
         {
             int appId = Convert.ToInt32(request.ApplicationId);
@@ -241,7 +235,6 @@ namespace BankUAPI.Application.Implementation.MicroLoan
             }, "Terms fetched");
         }
 
-        // ================= DISBURSAL =================
         public async Task<ApiResponse<LoanDisbursalResponse>> GetDisbursal(LoanDisbursalRequest request, CancellationToken cn)
         {
             int appId = Convert.ToInt32(request.ApplicationId);
@@ -262,7 +255,223 @@ namespace BankUAPI.Application.Implementation.MicroLoan
             }, "Disbursal fetched");
         }
 
-        // ================= HELPERS =================
+        public async Task<ApiResponse<LoanApplicationDetailResponse>> GetApplicationDetails(LoanStatusRequest request,CancellationToken cn)
+        {
+            if (!int.TryParse(request.ApplicationId, out int appId))
+                return Error<LoanApplicationDetailResponse>("Invalid ApplicationId");
+
+            var app = await _db.LoanApplications
+                .FirstOrDefaultAsync(x => x.ApplicationId == appId, cn);
+
+            if (app == null)
+                return Error<LoanApplicationDetailResponse>("Application not found");
+
+            return Success(new LoanApplicationDetailResponse
+            {
+                ApplicationId = app.ApplicationId.ToString(),
+                ReUploadDocs =string.IsNullOrEmpty(app.ReUploadDocs)
+                        ? "" : app.ReUploadDocs.StartsWith("http", StringComparison.OrdinalIgnoreCase)
+                        ? app.ReUploadDocs: $"{_agreementSetting.BaseUrl.TrimEnd('/')}{app.ReUploadDocs.TrimStart('~')}",
+                RequirementMessage = app.RequirementMessage
+            }, "Application details fetched");
+        }
+
+        public async Task<ApiResponse<ReUploadLoanDocResponse>> ReUploadDocument(ReUploadLoanDocRequest request, CancellationToken cn)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(request.ApplicationId))
+                    return Error<ReUploadLoanDocResponse>("ApplicationId is required");
+
+                if (!int.TryParse(request.ApplicationId, out int appId))
+                    return Error<ReUploadLoanDocResponse>("Invalid ApplicationId");
+
+                var app = await _db.LoanApplications
+                    .FirstOrDefaultAsync(x => x.ApplicationId == appId, cn);
+
+                if (app == null)
+                    return Error<ReUploadLoanDocResponse>("Application not found");
+
+                if (request.File == null || request.File.Length == 0)
+                    return Error<ReUploadLoanDocResponse>("File is required");
+
+                string[] allowedExt = { ".pdf", ".jpg", ".jpeg", ".png" };
+
+                string ext = Path.GetExtension(request.File.FileName).ToLower();
+
+                if (!allowedExt.Contains(ext))
+                    return Error<ReUploadLoanDocResponse>("Only PDF, JPG, JPEG, PNG files allowed");
+
+                if (request.File.Length > 5 * 1024 * 1024)
+                    return Error<ReUploadLoanDocResponse>("File size must be less than 5MB");
+
+                string folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/LoanDocs");
+
+                if (!Directory.Exists(folder))
+                    Directory.CreateDirectory(folder);
+
+                string fileName = $"APP_{appId}_{DateTime.Now:yyyyMMddHHmmss}{ext}";
+                string fullPath = Path.Combine(folder, fileName);
+
+                using (var stream = new FileStream(fullPath, FileMode.Create))
+                {
+                    await request.File.CopyToAsync(stream, cn);
+                }
+
+                string fileUrl = $"{_TicketSetting.BaseUrl.TrimEnd('/')}/LoanDocs/{fileName}";
+
+                app.ReUploadDocs = fileUrl;
+                app.ApplicationStatus = "Re-Uploaded";
+                app.DocumentUploadedOn = DateTime.UtcNow;
+
+                await _db.SaveChangesAsync(cn);
+
+                return Success(new ReUploadLoanDocResponse
+                {
+                    ApplicationId = appId.ToString(),
+                    FilePath = fileUrl,
+                    Status = "Re-Uploaded"
+                }, "Document re-uploaded successfully");
+            }
+            catch (Exception ex)
+            {
+                return Error<ReUploadLoanDocResponse>(ex.Message);
+            }
+        }
+        public async Task<ApiResponse<List<LoanApplicationListResponse>>> GetApplicationsByUser( LoanApplicationsByUserRequest request,CancellationToken cn)
+        {
+            var apps = await _db.LoanApplications
+                .Where(x => x.RetailerId == request.UserId)
+                .OrderByDescending(x => x.ApplicationId)
+                .ToListAsync(cn);
+
+            if (apps == null || apps.Count == 0)
+                return Error<List<LoanApplicationListResponse>>("No applications found");
+
+            var result = apps.Select(app => new LoanApplicationListResponse
+            {
+                ApplicationId = app.ApplicationId.ToString(),
+                FirstName = app.FirstName,
+                LastName = app.LastName,
+                Email = app.Email,
+                Mobile = app.Mobile,
+                ConfirmMobile = app.ConfirmMobile,
+                DOB = app.DOB,
+                PAN = app.PAN,
+                Gender = app.Gender,
+                BusinessAge = app.BusinessAge,
+                MonthlyRevenue = app.MonthlyRevenue,
+                LoanAmount = app.LoanAmount,
+                ApplicationStatus = app.ApplicationStatus,
+                CreatedOn = app.CreatedOn,
+                DocumentUploadedOn = app.DocumentUploadedOn,
+
+                PanPath =  string.IsNullOrEmpty(app.PanPath) ? "" : app.PanPath.StartsWith("http")
+                    ? app.PanPath : $"{_agreementSetting.BaseUrl.TrimEnd('/')}{app.PanPath.TrimStart('~')}",
+                GstPath =  string.IsNullOrEmpty(app.GstPath) ? "" : app.GstPath.StartsWith("http")
+                    ? app.GstPath : $"{_agreementSetting.BaseUrl.TrimEnd('/')}{app.GstPath.TrimStart('~')}",
+                BankStatementPath = string.IsNullOrEmpty(app.BankStatementPath) ? "" : app.BankStatementPath.StartsWith("http")
+                    ? app.BankStatementPath : $"{_agreementSetting.BaseUrl.TrimEnd('/')}{app.BankStatementPath.TrimStart('~')}",
+                PhotoPath = string.IsNullOrEmpty(app.PhotoPath) ? "" : app.PhotoPath.StartsWith("http")
+                    ? app.PhotoPath : $"{_agreementSetting.BaseUrl.TrimEnd('/')}{app.PhotoPath.TrimStart('~')}",
+                AadharPath = string.IsNullOrEmpty(app.AadharPath) ? "" : app.AadharPath.StartsWith("http")
+                    ? app.AadharPath : $"{_agreementSetting.BaseUrl.TrimEnd('/')}{app.AadharPath.TrimStart('~')}",
+
+                RetailerId = app.RetailerId,
+                RetailerName = app.RetailerName,
+                LoanType = app.LoanType,
+
+                ReUploadDocs = string.IsNullOrEmpty(app.ReUploadDocs)  ? "" : app.ReUploadDocs.StartsWith("http")
+                    ? app.ReUploadDocs : $"{_agreementSetting.BaseUrl.TrimEnd('/')}{app.ReUploadDocs.TrimStart('~')}",
+
+                RequirementMessage = app.RequirementMessage
+            }).ToList();
+
+            return Success(result, "Applications fetched successfully");
+        }
+
+        public async Task<ApiResponse<string>> UpdateLoanApplication( UpdateLoanApplicationRequest request, CancellationToken cn)
+        {
+            try
+            {
+                if (!int.TryParse(request.ApplicationId, out int appId))
+                    return Error<string>("Invalid ApplicationId");
+
+                var app = await _db.LoanApplications
+                    .FirstOrDefaultAsync(x => x.ApplicationId == appId, cn);
+
+                if (app == null)
+                    return Error<string>("Application not found");
+
+                if (string.IsNullOrEmpty(request.FieldName))
+                    return Error<string>("FieldName is required");
+
+                string field = request.FieldName.Trim().ToLower();
+
+                switch (field)
+                {
+                    case "firstname":
+                        app.FirstName = request.Value;
+                        break;
+
+                    case "lastname":
+                        app.LastName = request.Value;
+                        break;
+
+                    case "email":
+                        app.Email = request.Value;
+                        break;
+
+                    case "mobile":
+                        app.Mobile = request.Value;
+                        break;
+
+                    case "businessage":
+                        app.BusinessAge = Convert.ToInt32(request.Value);
+                        break;
+
+                    case "loanamount":
+                        if (!decimal.TryParse(request.Value, out decimal loanAmount))
+                            return Error<string>("Invalid LoanAmount");
+
+                        app.LoanAmount = request.Value;
+                        break;
+
+                    case "monthlyrevenue":
+                        if (!decimal.TryParse(request.Value, out decimal revenue))
+                            return Error<string>("Invalid MonthlyRevenue");
+
+                        app.MonthlyRevenue = revenue;
+                        break;
+
+                    case "loantype":
+                        app.LoanType = request.Value;
+                        break;
+
+                    case "gender":
+                        app.Gender = request.Value;
+                        break;
+
+                    case "dob":
+                        if (!DateTime.TryParse(request.Value, out DateTime dob))
+                            return Error<string>("Invalid DOB");
+
+                        app.DOB = request.Value;
+                        break;
+
+                    default:
+                        return Error<string>("Invalid or restricted field");
+                }
+
+                await _db.SaveChangesAsync(cn);
+
+                return Success("Application updated successfully");
+            }
+            catch (Exception ex)
+            {
+                return Error<string>(ex.Message);
+            }
+        }
         private ApiResponse<T> Success<T>(T data, string msg = "Success")
         {
             return new ApiResponse<T> { Status = "SUCCESS", Message = msg, Data = data };
