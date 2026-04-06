@@ -55,4 +55,8 @@ namespace BankUAPI.SharedKernel.Request
         public int RegistrationId { get; set; }
         public string Aadhaar { get; set; }
     }
+    public class RegistrationStatusRequest
+    {
+        public string Mobile { get; set; }
+    }
 }
