@@ -49,4 +49,19 @@ namespace BankUAPI.SharedKernel.Request.MicroLoan
     {
         public string ApplicationId { get; set; }
     }
+    public class ReUploadLoanDocRequest
+    {
+        public string ApplicationId { get; set; }
+        public IFormFile File { get; set; }
+    }
+    public class LoanApplicationsByUserRequest
+    {
+        public string UserId { get; set; }
+    }
+    public class UpdateLoanApplicationRequest
+    {
+        public string ApplicationId { get; set; }
+        public string FieldName { get; set; }
+        public string Value { get; set; }
+    }
 }

@@ -23,5 +23,14 @@ namespace BankUAPI.Application.Interface.MicroLoan
         Task<ApiResponse<LoanTermsResponse>> GetLoanTerms(LoanTermsRequest request, CancellationToken cn);
 
         Task<ApiResponse<LoanDisbursalResponse>> GetDisbursal(LoanDisbursalRequest request, CancellationToken cn);
+
+        Task<ApiResponse<LoanApplicationDetailResponse>> GetApplicationDetails(LoanStatusRequest request, CancellationToken cn);
+
+        Task<ApiResponse<ReUploadLoanDocResponse>> ReUploadDocument(ReUploadLoanDocRequest request, CancellationToken cn);
+
+        Task<ApiResponse<List<LoanApplicationListResponse>>> GetApplicationsByUser(LoanApplicationsByUserRequest request, CancellationToken cn);
+        
+        Task<ApiResponse<string>> UpdateLoanApplication(UpdateLoanApplicationRequest request, CancellationToken cn);
+
     }
 }

@@ -50,5 +50,26 @@ namespace BankU.API.Controllers
         {
             return Ok(await _loanService.GetDisbursal(request, cn));
         }
+        [HttpPost("reupload-status")]
+        public async Task<IActionResult> GetApplicationDetails( [FromBody] LoanStatusRequest request,CancellationToken cn)
+        {
+            return Ok(await _loanService.GetApplicationDetails(request, cn));
+        }
+
+        [HttpPost("reupload-document")]
+        public async Task<IActionResult> ReUploadDocument( [FromForm] ReUploadLoanDocRequest request, CancellationToken cn)
+        {
+            return Ok(await _loanService.ReUploadDocument(request, cn));
+        }
+        [HttpPost("applications-list")]
+        public async Task<IActionResult> GetApplicationsByUser( [FromBody] LoanApplicationsByUserRequest request, CancellationToken cn)
+        {
+            return Ok(await _loanService.GetApplicationsByUser(request, cn));
+        }
+        [HttpPost("update-application")]
+        public async Task<IActionResult> UpdateLoanApplication( [FromBody] UpdateLoanApplicationRequest request, CancellationToken cn)
+        {
+            return Ok(await _loanService.UpdateLoanApplication(request, cn));
+        }
     }
 }
