@@ -25,7 +25,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
         }
 
         // ================= STEP 1 =================
-        public async Task<ApiResponse<Step1Response>> Step1(Step1Request req)
+        public async Task<ApiResponse<Step1Response>> Step1(Step1Request req, CancellationToken ct)
         {
             if (string.IsNullOrEmpty(req.Pan) || string.IsNullOrEmpty(req.Mpin))
                 return Error<Step1Response>("All fields required");
@@ -72,7 +72,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
         }
 
         // ================= STEP 2 =================
-        public async Task<ApiResponse<MessageResponse>> Step2(Step2Request req)
+        public async Task<ApiResponse<MessageResponse>> Step2(Step2Request req, CancellationToken ct)
         {
             var user = await _db.Registrations.FindAsync(req.RegistrationId);
 
@@ -90,7 +90,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
         }
 
         // ================= STEP 3 =================
-        public async Task<ApiResponse<MessageResponse>> Step3(Step3Request req)
+        public async Task<ApiResponse<MessageResponse>> Step3(Step3Request req, CancellationToken ct)
         {
             var user = await _db.Registrations.FindAsync(req.RegistrationId);
 
@@ -150,7 +150,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
         }
 
         // ================= STEP 4 =================
-        public async Task<ApiResponse<MessageResponse>> Step4(Step4Request req)
+        public async Task<ApiResponse<MessageResponse>> Step4(Step4Request req, CancellationToken ct)
         {
             var user = await _db.Registrations.FindAsync(req.RegistrationId);
 
@@ -185,7 +185,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
         }
 
         // ================= STEP 5 =================
-        public async Task<ApiResponse<MessageResponse>> Complete(Step5Request req)
+        public async Task<ApiResponse<MessageResponse>> Complete(Step5Request req, CancellationToken ct)
         {
             var user = await _db.Registrations.FindAsync(req.RegistrationId);
 
@@ -204,7 +204,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
 
             return Success(new MessageResponse { Result = "Registration completed" });
         }
-        public async Task<ApiResponse<AadhaarOtpResult>> SendAadhaarOtp(AadhaarOtpRequest req)
+        public async Task<ApiResponse<AadhaarOtpResult>> SendAadhaarOtp(AadhaarOtpRequest req, CancellationToken ct)
         {
             var user = await _db.Registrations.FindAsync(req.RegistrationId);
 
@@ -220,6 +220,24 @@ namespace BankUAPI.Application.Implementation.UserRegistration
                 return Error<AadhaarOtpResult>(result.Message ?? "OTP failed");
 
             return Success(result);
+        }
+        public async Task<ApiResponse<RegistrationStatusResponse>> GetRegistrationStatus(RegistrationStatusRequest req , CancellationToken ct)
+        {
+            if (string.IsNullOrWhiteSpace(req.Mobile))
+                return Error<RegistrationStatusResponse>("Mobile number is required");
+
+            var user = await _db.Registrations
+                .FirstOrDefaultAsync(x => x.MobileNo == req.Mobile);
+
+            if (user == null)
+                return Error<RegistrationStatusResponse>("User not found");
+
+            return Success(new RegistrationStatusResponse
+            {
+                RegistrationStatus = user.RegistrationStatus,
+                UserId = user.RegistrationId.ToString(),
+                Name = user.FullName
+            });
         }
         private ApiResponse<T> Success<T>(T data)
         {
