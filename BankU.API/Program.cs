@@ -18,6 +18,7 @@ using BankUAPI.Application.Implementation.Recharge;
 using BankUAPI.Application.Implementation.Ticket;
 using BankUAPI.Application.Implementation.UserRegistration;
 using BankUAPI.Application.Implementation.Validator;
+using BankUAPI.Application.Implementation.ZohoMailService;
 using BankUAPI.Application.Interface;
 using BankUAPI.Application.Interface.AddFund;
 using BankUAPI.Application.Interface.BankAccount;
@@ -34,6 +35,7 @@ using BankUAPI.Application.Interface.Recharge;
 using BankUAPI.Application.Interface.Ticket;
 using BankUAPI.Application.Interface.UserRegistration;
 using BankUAPI.Application.Interface.Validator;
+using BankUAPI.Application.Interface.ZohoMailService;
 using BankUAPI.Application.Middlewear;
 using BankUAPI.Infrastructure.Mongo;
 using BankUAPI.Infrastructure.Sql.Entities;
@@ -285,6 +287,7 @@ builder.Services.AddScoped<ILoanService, LoanService>();
 builder.Services.AddScoped<IRechargePlanService, RechargePlanService>();
 builder.Services.AddScoped<IBillPaymentService, BillPaymentService>();
 builder.Services.AddScoped<IFetchHlrService, FetchHlrService>();
+builder.Services.AddHttpClient<IEmailService, ZohoEmailService>();
 
 var app = builder.Build();
 if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
