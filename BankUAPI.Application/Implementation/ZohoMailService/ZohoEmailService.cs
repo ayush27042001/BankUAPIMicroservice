@@ -91,10 +91,10 @@ namespace BankUAPI.Application.Implementation.ZohoMailService
         private string GetOtpTemplate(string otp)
         {
             return $@"
-                <div style='margin:0; padding:0; background-color:#eef2f7; font-family:Segoe UI, Arial, sans-serif;'>
-                <table width='100%' style='padding:20px 0; background:#eef2f7;'>
+                <div  style='margin:0; padding:0; background-color:#eef2f7; font-family:Segoe UI, Arial, sans-serif;'>
+                <table width='100%' cellpadding='0' cellspacing='0' border='0' style='padding:20px 0; background:#eef2f7;'>
                 <tr><td align='center'>
-                <table width='440' style='background:#ffffff; border-radius:12px; overflow:hidden;'>
+                <table width='440'  cellpadding='0' cellspacing='0' border='0' style='background:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 6px 18px rgba(0,0,0,0.08);'>
 
                 <tr>
                 <td align='center' style='padding:25px 20px 10px;'>
@@ -103,24 +103,52 @@ namespace BankUAPI.Application.Implementation.ZohoMailService
                 </tr>
 
                 <tr>
-                <td align='center'>
-                <h2 style='color:#1e3a8a;'>Secure Verification</h2>
+                <td align='center' style='padding:10px 20px 0;'>
+                 <h2 style='margin:0; color:#1e3a8a; font-size:22px; font-weight:600;'>
+            Secure Verification
+          </h2>
                 </td>
                 </tr>
 
                 <tr>
-                <td style='padding:25px 30px;'>
-                <p>Dear Customer,</p>
-                <p>Your OTP is valid for 5 minutes.</p>
+                <td style='padding:25px 30px; color:#374151;'>
+                <p style='margin:0 0 12px; font-size:14px;'>   Dear Customer,
+                </p>
 
-                <div style='text-align:center; margin:20px;'>
-                <span style='font-size:28px; font-weight:bold; letter-spacing:6px; color:#1e3a8a;'>
-                {otp}
-                </span>
+                <p style='margin:0 0 20px; font-size:14px; line-height:1.6;'>
+                    To continue securely with your request, please use the One-Time Password (OTP) below. This OTP is valid for <strong>5 minutes</strong>.
+                </p>
+
+            <table width='100%' cellpadding='0' cellspacing='0' border='0' style='margin:25px 0;'>
+            <tr>
+              <td align='center'>
+                <div style='display:inline-block; background:#e0ecff; padding:16px 30px; border-radius:10px; border:1px dashed #1e3a8a;'>
+                  <span style='font-size:28px; font-weight:bold; letter-spacing:6px; color:#1e3a8a;'>
+                    {otp}
+                  </span>
                 </div>
+              </td>
+            </tr>
+          </table>
 
-                <p style='font-size:12px;'>Do not share OTP.</p>
+            <p style='margin:0; font-size:13px; color:#6b7280;'>
+                Please do not share this OTP with anyone. BankU will never ask for your OTP.
+             </p>
+
                 </td>
+                </tr>
+
+                <tr>
+                    <td style='padding:0 30px;'>
+                      <hr style='border:none; border-top:1px solid #e5e7eb;'/>
+                    </td>
+                 </tr>
+
+                <tr>
+                    <td align='center' style='padding:15px 20px 25px; font-size:12px; color:#9ca3af;'>
+                      © 2026 BankU. All rights reserved.<br/>
+                      Secure Banking • Trusted Services
+                    </td>
                 </tr>
 
                 </table>
