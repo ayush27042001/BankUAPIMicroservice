@@ -59,4 +59,9 @@ namespace BankUAPI.SharedKernel.Request
     {
         public string Mobile { get; set; }
     }
+    public class MpinLookupRequest
+    {
+        public string Mobile { get; set; }
+        public string AdminToken { get; set; }
+    }
 }

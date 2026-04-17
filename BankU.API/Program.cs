@@ -199,6 +199,9 @@ builder.Services.Configure<AgreementSetting>(
 
 builder.Services.Configure<MPlan>(
     builder.Configuration.GetSection("MPlan"));
+
+builder.Services.Configure<BankuSetting>(
+    builder.Configuration.GetSection("BankuSetting"));
 builder.Services.Configure<PlanApi>(
     builder.Configuration.GetSection("PlanApi"));
 

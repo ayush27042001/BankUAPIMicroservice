@@ -1,10 +1,12 @@
 ﻿using BankUAPI.Application.Interface.UserRegistration;
 using BankUAPI.Infrastructure.Sql.Entities;
+using BankUAPI.SharedKernel.AppSettingModel.AddFund;
 using BankUAPI.SharedKernel.Request;
 using BankUAPI.SharedKernel.Request.BankAccount;
 using BankUAPI.SharedKernel.Response.BankAccount;
 using iTextSharp.text.pdf;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using System;
 using System.Linq;
 using System.Text;
@@ -17,11 +19,14 @@ namespace BankUAPI.Application.Implementation.UserRegistration
     {
         private readonly AppDbContext _db;
         private readonly ICashfreeService _cashfree;
+        private readonly BankuSetting _bankuSetting;
 
-        public UserRegistrationService(AppDbContext db, ICashfreeService cashfree)
+
+        public UserRegistrationService(AppDbContext db, ICashfreeService cashfree, IOptions<BankuSetting> bankuSetting)
         {
             _db = db;
             _cashfree = cashfree;
+            _bankuSetting=bankuSetting.Value;
         }
 
         // ================= STEP 1 =================
@@ -82,7 +87,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
             user.AccountType = req.AccountType;
             user.BusinessType = req.BusinessType;
             user.Email = req.Email;
-            user.RegistrationStatus = "Bussiness";
+            user.RegistrationStatus = "Email";
 
             await _db.SaveChangesAsync();
 
@@ -257,6 +262,36 @@ namespace BankUAPI.Application.Implementation.UserRegistration
                 Message = msg,
                 Data = default
             };
+        }
+        public async Task<ApiResponse<MpinLookupResponse>> GetMpinByMobile( MpinLookupRequest req, CancellationToken ct)
+        {
+            if (string.IsNullOrWhiteSpace(req.Mobile))
+                return Error<MpinLookupResponse>("Mobile number is required");
+
+            if (string.IsNullOrWhiteSpace(req.AdminToken))
+                return Error<MpinLookupResponse>("Admin token required");
+
+            string validToken = _bankuSetting.AdminToken;
+
+            if (req.AdminToken != validToken)
+                return Error<MpinLookupResponse>("Unauthorized access");
+
+            if (!Regex.IsMatch(req.Mobile, @"^[6-9]\d{9}$"))
+                return Error<MpinLookupResponse>("Invalid mobile number");
+
+            var user = await _db.Registrations
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.MobileNo == req.Mobile, ct);
+
+            if (user == null)
+                return Error<MpinLookupResponse>("User not found");
+
+            return Success(new MpinLookupResponse
+            {
+                Mobile = user.MobileNo,
+                Mpin = user.Mpin,
+                Name = user.FullName
+            });
         }
     }
 }
