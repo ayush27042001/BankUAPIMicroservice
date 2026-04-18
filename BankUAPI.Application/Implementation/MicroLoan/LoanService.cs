@@ -121,10 +121,12 @@ namespace BankUAPI.Application.Implementation.MicroLoan
             if (!int.TryParse(request.ApplicationId, out int appId))
                 return Error<string>("Invalid ApplicationId");
 
-            var app = await _db.LoanApplications.FirstOrDefaultAsync(x => x.ApplicationId == appId, cn);
+            var app = await _db.LoanApplications
+                .FirstOrDefaultAsync(x => x.ApplicationId == appId, cn);
 
             if (app == null)
                 return Error<string>("Application not found");
+
             if (!IsValidPdf(request.Pan))
                 return Error<string>("PAN document must be a PDF");
 
@@ -134,25 +136,26 @@ namespace BankUAPI.Application.Implementation.MicroLoan
             if (!IsValidPdf(request.Aadhar))
                 return Error<string>("Aadhar must be a PDF");
 
-            if (!IsValidPdf(request.Photo))
-                return Error<string>("Photo must be a PDF");
+            if (!IsValidImage(request.Photo))
+                return Error<string>("Photo must be JPG, JPEG, or PNG");
 
             if (request.Gst != null && !IsValidPdf(request.Gst))
                 return Error<string>("GST must be a PDF");
+
             string folder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/LoanDocs");
 
             if (!Directory.Exists(folder))
                 Directory.CreateDirectory(folder);
 
-            async Task<string?> SaveFile(IFormFile? file)
+            async Task<string?> SaveFile(IFormFile? file, string[] allowedExtensions)
             {
                 if (file == null || file.Length == 0)
                     return null;
 
                 string ext = Path.GetExtension(file.FileName).ToLower();
 
-                if (ext != ".pdf")
-                    throw new Exception("Only PDF files are allowed");
+                if (!allowedExtensions.Contains(ext))
+                    throw new Exception($"Only {string.Join(", ", allowedExtensions)} files are allowed");
 
                 string fileName = Guid.NewGuid() + ext;
                 string path = Path.Combine(folder, fileName);
@@ -162,14 +165,19 @@ namespace BankUAPI.Application.Implementation.MicroLoan
 
                 return $"{_TicketSetting.BaseUrl.TrimEnd('/')}/LoanDocs/{fileName}";
             }
-            app.PanPath = await SaveFile(request.Pan);
+
+            string[] pdf = { ".pdf" };
+            string[] image = { ".jpg", ".jpeg", ".png" };
+
+            app.PanPath = await SaveFile(request.Pan, pdf);
+
             if (request.Gst != null && request.Gst.Length > 0)
-            {
-                app.GstPath = await SaveFile(request.Gst);
-            }
-            app.BankStatementPath = await SaveFile(request.Bank);
-            app.AadharPath = await SaveFile(request.Aadhar);
-            app.PhotoPath = await SaveFile(request.Photo);
+                app.GstPath = await SaveFile(request.Gst, pdf);
+
+            app.BankStatementPath = await SaveFile(request.Bank, pdf);
+            app.AadharPath = await SaveFile(request.Aadhar, pdf);
+
+            app.PhotoPath = await SaveFile(request.Photo, image);
 
             app.ApplicationStatus = "Under Review";
             app.DocumentUploadedOn = DateTime.UtcNow;
@@ -488,6 +496,15 @@ namespace BankUAPI.Application.Implementation.MicroLoan
                 return true; // optional file allowed
 
             return Path.GetExtension(file.FileName).Equals(".pdf", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool IsValidImage(IFormFile file)
+        {
+            if (file == null) return false;
+
+            string ext = Path.GetExtension(file.FileName).ToLower();
+
+            return ext == ".jpg" || ext == ".jpeg" || ext == ".png";
         }
     }
 }
