@@ -18,5 +18,6 @@ namespace BankUAPI.Application.Interface.UserRegistration
         Task<ApiResponse<MessageResponse>> Complete(Step5Request request, CancellationToken ct);
         Task<ApiResponse<RegistrationStatusResponse>> GetRegistrationStatus(RegistrationStatusRequest req, CancellationToken ct);
         Task<ApiResponse<AadhaarOtpResult>> SendAadhaarOtp(AadhaarOtpRequest req, CancellationToken ct);
+        Task<ApiResponse<MpinLookupResponse>> GetMpinByMobile(MpinLookupRequest req, CancellationToken ct);
     }
 }

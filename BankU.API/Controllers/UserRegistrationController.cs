@@ -54,5 +54,10 @@ namespace BankU.API.Controllers
         {
             return Ok(await _service.GetRegistrationStatus(req, ct));
         }
+        [HttpPost("get-mpin")]
+        public async Task<IActionResult> GetMpin( MpinLookupRequest req, CancellationToken ct)
+        {
+            return Ok(await _service.GetMpinByMobile(req, ct));
+        }
     }
 }
