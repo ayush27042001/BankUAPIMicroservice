@@ -287,6 +287,8 @@ builder.Services.AddScoped<ILoanService, LoanService>();
 builder.Services.AddScoped<IRechargePlanService, RechargePlanService>();
 builder.Services.AddScoped<IBillPaymentService, BillPaymentService>();
 builder.Services.AddScoped<IFetchHlrService, FetchHlrService>();
+builder.Services.AddScoped<IEmailOtpService, EmailOtpService>();
+builder.Services.AddScoped<IRiskService, RiskService>();
 builder.Services.AddHttpClient<IEmailService, ZohoEmailService>();
 
 var app = builder.Build();

@@ -7,8 +7,9 @@ using System.Threading.Tasks;
 
 namespace BankUAPI.Application.Interface.ZohoMailService
 {
-    public interface IEmailService
+    public interface IRiskService
     {
-        Task SendOtpEmail(string email, string otp);
+        Task<RiskResult> EvaluateRisk(string email, string deviceId, string ip);
+        Task SaveTrustedDevice(string email, string deviceId, string ip);
     }
 }

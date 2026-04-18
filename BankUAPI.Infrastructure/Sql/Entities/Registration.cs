@@ -93,5 +93,8 @@ public partial class Registration
     public string? BusinessProofUploadtype { get; set; }
     public string? KycStatus { get; set; }
     public string? RmId { get; set; }
-    
+    public bool? IsEmailVerified { get; set; }
+    public DateTime? EmailVerifiedAt { get; set; }
+
+
 }

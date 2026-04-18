@@ -121,5 +121,26 @@ namespace BankUAPI.Application.Implementation
                 userid = Convert.ToString(user.RegistrationId)
             };
         }
+
+        public async Task<Registration> GetByEmail(string email)
+        {
+            return await _db.Registrations.Where(x => x.Email.Trim().ToLower() == email.Trim().ToLower()).FirstOrDefaultAsync();
+        }
+
+        public async Task MarkEmailVerified(string email)
+        {
+            var emailData = await _db.Registrations.Where(x => x.Email.Trim().ToLower()== email.Trim().ToLower()).FirstOrDefaultAsync();
+            if (emailData == null)
+            {
+                return;
+            }
+
+            emailData.IsEmailVerified = true;
+            emailData.EmailVerifiedAt = DateTime.Now;
+
+            _db.Registrations.Update(emailData);
+            await _db.SaveChangesAsync();
+        }
+
     }
 }

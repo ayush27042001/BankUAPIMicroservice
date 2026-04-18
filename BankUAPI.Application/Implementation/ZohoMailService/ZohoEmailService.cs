@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Headers;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -22,17 +23,16 @@ namespace BankUAPI.Application.Implementation.ZohoMailService
             _config = config;
         }
 
-        public async Task SendOtpEmail(EmailRequest request)
+        public async Task SendOtpEmail(string email, string otp)
         {
             var accessToken = await GetAccessTokenAsync();
-
-            var htmlTemplate = GetOtpTemplate(request.Otp);
+            var htmlTemplate = GetOtpTemplate(otp);
 
             var payload = new
             {
                 fromAddress = _config["Zoho:Email"],
-                toAddress = request.To,
-                subject = request.Subject,
+                toAddress = email,
+                subject = "Email Verification Request",
                 content = htmlTemplate,
                 mailFormat = "html"
             };

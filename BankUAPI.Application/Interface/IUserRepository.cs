@@ -18,5 +18,7 @@ namespace BankUAPI.Application.Interface
         Task<string?> GetOutletIdAsync(int userId, CancellationToken ct);
         Task<LoginResponseDto?> LoginAsync(LoginRequestDto request);
         Task<Registration?> GetUserData(string userId, CancellationToken ct);
+        Task<Registration> GetByEmail(string email);
+        Task MarkEmailVerified(string email);
     }
 }
