@@ -21,4 +21,10 @@ namespace BankUAPI.SharedKernel.Response.BankAccount
         public string UserId { get; set; }
         public string Name { get; set; }
     }
+    public class MpinLookupResponse
+    {
+        public string Mobile { get; set; }
+        public string Mpin { get; set; }
+        public string Name { get; set; }
+    }
 }
