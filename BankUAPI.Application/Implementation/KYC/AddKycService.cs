@@ -109,7 +109,7 @@ namespace BankUAPI.Application.Implementation.KYC
                 user.KycApplication = await SaveFile(request.KycApplication, "KycApplication");
 
                 user.BusinessProofUploadtype = request.BusinessProofUploadtype;
-                user.KycStatus = "Pending";
+                user.KycStatus = "Review";
 
                 _db.Registrations.Update(user);
 
