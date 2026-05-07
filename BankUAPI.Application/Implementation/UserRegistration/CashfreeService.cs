@@ -1,6 +1,8 @@
 ﻿using BankUAPI.Application.Interface.UserRegistration;
+using BankUAPI.Infrastructure.Sql.Entities;
 using BankUAPI.SharedKernel.AppSettingModel.AddFund;
 using BankUAPI.SharedKernel.Request.BankAccount;
+using iTextSharp.text.pdf;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 using System;
@@ -16,14 +18,15 @@ namespace BankUAPI.Application.Implementation.UserRegistration
     {
         private readonly IHttpClientFactory _http;
         private readonly CashfreeSetting _config;
-
-        public CashfreeService(IHttpClientFactory http, IOptions<CashfreeSetting> config)
+        private readonly AppDbContext _db;
+        public CashfreeService(IHttpClientFactory http, IOptions<CashfreeSetting> config, AppDbContext db)
         {
             _http = http;
             _config = config.Value;
+            _db = db;
         }
 
-        public async Task<PanVerifyResult> VerifyPan(string pan)
+        public async Task<PanVerifyResult> VerifyPan(string pan, string RegId)
         {
             var client = _http.CreateClient();
 
@@ -40,7 +43,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
 
             var response = await client.SendAsync(request);
             var content = await response.Content.ReadAsStringAsync();
-
+            LogApiCall(RegId, request.ToString(), response.ToString(),  "Pan_verify_App");
             var json = JObject.Parse(content);
 
             return new PanVerifyResult
@@ -51,9 +54,9 @@ namespace BankUAPI.Application.Implementation.UserRegistration
             };
         }
 
-        public async Task<PanVerifyResult> VerifyBusinessPan(string pan)
+        public async Task<PanVerifyResult> VerifyBusinessPan(string pan, string RegId)
         {
-            var result = await VerifyPan(pan);
+            var result = await VerifyPan(pan, RegId);
 
             result.IsValid = (result.IsValid ?? false) &&
                      string.Equals(result.Type, "COMPANY", StringComparison.OrdinalIgnoreCase);
@@ -61,7 +64,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
             return result;
         }
 
-        public async Task<AadhaarOtpResult> SendAadhaarOtp(string aadhaar)
+        public async Task<AadhaarOtpResult> SendAadhaarOtp(string aadhaar, string RegId)
         {
             var client = _http.CreateClient();
 
@@ -78,7 +81,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
 
             var response = await client.SendAsync(request);
             var content = await response.Content.ReadAsStringAsync();
-
+            LogApiCall(RegId, request.ToString(), response.ToString(), "Aadhaar_Otp_App");
             var json = JObject.Parse(content);
 
             return new AadhaarOtpResult
@@ -89,7 +92,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
             };
         }
 
-        public async Task<AadhaarVerifyResult> VerifyAadhaar(string otp, string refId, string panName)
+        public async Task<AadhaarVerifyResult> VerifyAadhaar(string otp, string refId, string panName, string RegId)
         {
             var client = _http.CreateClient();
 
@@ -106,7 +109,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
 
             var response = await client.SendAsync(request);
             var content = await response.Content.ReadAsStringAsync();
-
+            LogApiCall(RegId, request.ToString(), response.ToString(), "Aadhaar_Verify_App");
             var json = JObject.Parse(content);
 
             string name = json["name"]?.ToString()?.ToUpper();
@@ -127,7 +130,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
                 Pincode = json["split_address"]?["pincode"]?.ToString()
             };
         }
-        public async Task<GstVerifyResult> VerifyGst(string gst, string businessName)
+        public async Task<GstVerifyResult> VerifyGst(string gst, string businessName, string RegId)
         {
             var client = _http.CreateClient();
 
@@ -148,7 +151,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
 
             var response = await client.SendAsync(request);
             var content = await response.Content.ReadAsStringAsync();
-
+            LogApiCall(RegId, request.ToString(), response.ToString(), "GST_Verify_App");
             var json = JObject.Parse(content);
 
             return new GstVerifyResult
@@ -158,7 +161,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
                 TradeName = json["trade_name_of_business"]?.ToString()
             };
         }
-        public async Task<CinVerifyResult> VerifyCin( string cin, string panName)
+        public async Task<CinVerifyResult> VerifyCin( string cin, string panName, string RegId)
         {
             var client = _http.CreateClient();
 
@@ -181,7 +184,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
 
             var response = await client.SendAsync(request);
             var content = await response.Content.ReadAsStringAsync();
-
+            LogApiCall(RegId, request.ToString(), response.ToString(), "cin_Verify_App");
             var json = JObject.Parse(content);
 
             string status = json["status"]?.ToString()?.ToUpper();
@@ -215,6 +218,21 @@ namespace BankUAPI.Application.Implementation.UserRegistration
                 CompanyName = json["company_name"]?.ToString(),
                 IsDirectorMatched = directorMatched
             };
+        }
+
+        public async Task LogApiCall(string userId, string request, string response, string apiType)
+        {
+            var log = new Apilog
+            {
+                UserId = userId,
+                Request = request,
+                Responce = response,
+                ApiType = apiType,
+                RequestDate = DateTime.Now
+            };
+
+            await _db.Apilogs.AddAsync(log);
+            await _db.SaveChangesAsync();
         }
     }
 }
