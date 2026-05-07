@@ -45,7 +45,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
 
             if (exists)
                 return Error<Step1Response>("User already exists");
-            var panResult = await _cashfree.VerifyPan(req.Pan, req.Pan);
+            var panResult = await _cashfree.VerifyPan(req.Pan);
 
             if (!(panResult.IsValid ?? false) || !string.Equals(panResult.Type, "INDIVIDUAL", StringComparison.OrdinalIgnoreCase))
 
@@ -102,7 +102,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
             if (user == null)
                 return Error<MessageResponse>("User not found");
 
-            var panResult = await _cashfree.VerifyBusinessPan(req.BusinessPan, Convert.ToString(req.RegistrationId));
+            var panResult = await _cashfree.VerifyBusinessPan(req.BusinessPan);
 
             if (panResult == null || !(panResult.IsValid ?? false))
                 return Error<MessageResponse>("Invalid company PAN");
@@ -112,7 +112,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
             user.CompanyName = req.BusinessName;
             if (proofType == "GST")
             {
-                var gstResult = await _cashfree.VerifyGst(req.ProofNumber, req.BusinessName, Convert.ToString(req.RegistrationId));
+                var gstResult = await _cashfree.VerifyGst(req.ProofNumber, req.BusinessName);
 
                 if (gstResult == null)
                     return Error<MessageResponse>("GST verification failed");
@@ -128,8 +128,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
             {
                 var cinResult = await _cashfree.VerifyCin(
                     req.ProofNumber,
-                    panName,
-                    Convert.ToString(req.RegistrationId)
+                    panName
                 );
 
                 if (cinResult == null)
@@ -171,8 +170,8 @@ namespace BankUAPI.Application.Implementation.UserRegistration
                 var result = await _cashfree.VerifyAadhaar(
                     req.Otp,
                     req.RefId,
-                    user.FullName,
-                    Convert.ToString(req.RegistrationId)
+                    user.FullName
+                   
                 );
 
                 if (!(result.Success ?? false))
@@ -216,12 +215,12 @@ namespace BankUAPI.Application.Implementation.UserRegistration
             var user = await _db.Registrations.FindAsync(req.RegistrationId);
 
             if (user == null)
-                return Error<AadhaarOtpResult>("User not found");
+                return Error<AadhaarOtpResult>("User noawaitt found");
 
             if (string.IsNullOrWhiteSpace(req.Aadhaar))
                 return Error<AadhaarOtpResult>("Aadhaar is required");
 
-            var result = await _cashfree.SendAadhaarOtp(req.Aadhaar, Convert.ToString(req.RegistrationId));
+            var result = await _cashfree.SendAadhaarOtp(req.Aadhaar);
 
             if (!(result.Success ?? false))
                 return Error<AadhaarOtpResult>(result.Message ?? "OTP failed");
