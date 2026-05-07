@@ -15,5 +15,6 @@ namespace BankUAPI.Application.Interface.UserRegistration
         Task<AadhaarVerifyResult> VerifyAadhaar(string otp, string refId, string panName);
         Task<GstVerifyResult> VerifyGst(string gst, string businessName);
         Task<CinVerifyResult> VerifyCin( string cin, string panName);
+        Task LogApiCall(string userId, string request, string response, string apiType);
     }
 }

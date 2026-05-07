@@ -171,6 +171,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
                     req.Otp,
                     req.RefId,
                     user.FullName
+                   
                 );
 
                 if (!(result.Success ?? false))
@@ -214,7 +215,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
             var user = await _db.Registrations.FindAsync(req.RegistrationId);
 
             if (user == null)
-                return Error<AadhaarOtpResult>("User not found");
+                return Error<AadhaarOtpResult>("User noawaitt found");
 
             if (string.IsNullOrWhiteSpace(req.Aadhaar))
                 return Error<AadhaarOtpResult>("Aadhaar is required");

@@ -1,6 +1,8 @@
 ﻿using BankUAPI.Application.Interface.UserRegistration;
+using BankUAPI.Infrastructure.Sql.Entities;
 using BankUAPI.SharedKernel.AppSettingModel.AddFund;
 using BankUAPI.SharedKernel.Request.BankAccount;
+using iTextSharp.text.pdf;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 using System;
@@ -16,11 +18,12 @@ namespace BankUAPI.Application.Implementation.UserRegistration
     {
         private readonly IHttpClientFactory _http;
         private readonly CashfreeSetting _config;
-
-        public CashfreeService(IHttpClientFactory http, IOptions<CashfreeSetting> config)
+        private readonly AppDbContext _db;
+        public CashfreeService(IHttpClientFactory http, IOptions<CashfreeSetting> config, AppDbContext db)
         {
             _http = http;
             _config = config.Value;
+            _db = db;
         }
 
         public async Task<PanVerifyResult> VerifyPan(string pan)
@@ -40,7 +43,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
 
             var response = await client.SendAsync(request);
             var content = await response.Content.ReadAsStringAsync();
-
+            await LogApiCall(pan, request.ToString(), response.ToString(),  "Pan_verify_App");
             var json = JObject.Parse(content);
 
             return new PanVerifyResult
@@ -78,7 +81,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
 
             var response = await client.SendAsync(request);
             var content = await response.Content.ReadAsStringAsync();
-
+            await LogApiCall(aadhaar, request.ToString(), response.ToString(), "Aadhaar_Otp_App");
             var json = JObject.Parse(content);
 
             return new AadhaarOtpResult
@@ -106,7 +109,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
 
             var response = await client.SendAsync(request);
             var content = await response.Content.ReadAsStringAsync();
-
+            await LogApiCall(panName, request.ToString(), response.ToString(), "Aadhaar_Verify_App");
             var json = JObject.Parse(content);
 
             string name = json["name"]?.ToString()?.ToUpper();
@@ -148,7 +151,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
 
             var response = await client.SendAsync(request);
             var content = await response.Content.ReadAsStringAsync();
-
+            await LogApiCall(gst, request.ToString(), response.ToString(), "GST_Verify_App");
             var json = JObject.Parse(content);
 
             return new GstVerifyResult
@@ -181,7 +184,7 @@ namespace BankUAPI.Application.Implementation.UserRegistration
 
             var response = await client.SendAsync(request);
             var content = await response.Content.ReadAsStringAsync();
-
+            await LogApiCall(cin, request.ToString(), response.ToString(), "cin_Verify_App");
             var json = JObject.Parse(content);
 
             string status = json["status"]?.ToString()?.ToUpper();
@@ -215,6 +218,21 @@ namespace BankUAPI.Application.Implementation.UserRegistration
                 CompanyName = json["company_name"]?.ToString(),
                 IsDirectorMatched = directorMatched
             };
+        }
+
+        public async Task LogApiCall(string userId, string request, string response, string apiType)
+        {
+            var log = new Apilog
+            {
+                UserId = userId,
+                Request = request,
+                Responce = response,
+                ApiType = apiType,
+                RequestDate = DateTime.Now
+            };
+
+            await _db.Apilogs.AddAsync(log);
+            await _db.SaveChangesAsync();
         }
     }
 }
